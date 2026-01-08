@@ -7,10 +7,10 @@ const Header = () => {
 
   const navLinks = [
     { name: "Accueil", href: "#" },
-    { name: "Bracelets", href: "#categories" },
-    { name: "Colliers", href: "#categories" },
-    { name: "Bagues", href: "#categories" },
+    { name: "Collection", href: "#collection" },
+    { name: "La Croix d'Agadez", href: "#heritage" },
     { name: "Notre Histoire", href: "#about" },
+    { name: "Contact", href: "#contact" },
   ];
 
   return (
@@ -19,8 +19,8 @@ const Header = () => {
         <div className="flex items-center justify-between h-16 lg:h-20">
           {/* Logo */}
           <a href="#" className="flex items-center gap-2">
-            <span className="font-display text-2xl lg:text-3xl font-bold text-foreground">
-              Ténéré <span className="text-gradient-gold">Bijoux</span>
+            <span className="font-display text-2xl lg:text-3xl font-bold tracking-wider">
+              <span className="text-gradient-gold">ZEYANI</span>
             </span>
           </a>
 
@@ -30,7 +30,7 @@ const Header = () => {
               <a
                 key={link.name}
                 href={link.href}
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-200"
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-200 tracking-wide"
               >
                 {link.name}
               </a>
@@ -44,7 +44,7 @@ const Header = () => {
             </Button>
             <Button variant="ghost" size="icon" className="relative">
               <ShoppingBag className="h-5 w-5" />
-              <span className="absolute -top-1 -right-1 bg-accent text-accent-foreground text-xs w-5 h-5 rounded-full flex items-center justify-center font-semibold">
+              <span className="absolute -top-1 -right-1 bg-gold text-primary-foreground text-xs w-5 h-5 rounded-full flex items-center justify-center font-semibold">
                 0
               </span>
             </Button>
