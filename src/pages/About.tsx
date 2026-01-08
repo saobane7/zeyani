@@ -2,7 +2,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import AboutSection from "@/components/AboutSection";
 import Heritage from "@/components/Heritage";
-import artisanImage from "@/assets/artisan-tuareg.jpg";
+import aboutImage from "@/assets/about-jewelry.jpg";
 
 const About = () => {
   return (
@@ -52,8 +52,8 @@ const About = () => {
               </div>
               <div className="relative">
                 <img
-                  src={artisanImage}
-                  alt="Artisan Touareg"
+                  src={aboutImage}
+                  alt="Bijoux Touareg authentiques"
                   className="rounded-lg shadow-card w-full"
                 />
                 <div className="absolute -bottom-6 -left-6 w-32 h-32 border-2 border-gold/30 rounded-lg -z-10" />

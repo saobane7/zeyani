@@ -5,8 +5,10 @@ import { Button } from "@/components/ui/button";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { products, categories, formatPrice, getProductsByCategory } from "@/data/products";
+import { useCart } from "@/contexts/CartContext";
 
 const Collection = () => {
+  const { addToCart } = useCart();
   const [activeCategory, setActiveCategory] = useState("tous");
   const filteredProducts = getProductsByCategory(activeCategory);
 
@@ -90,7 +92,14 @@ const Collection = () => {
 
                     {/* Add to cart overlay */}
                     <div className="absolute inset-x-4 bottom-4 opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-300">
-                      <Button variant="gold" className="w-full rounded-full">
+                      <Button 
+                        variant="gold" 
+                        className="w-full rounded-full"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          addToCart(product);
+                        }}
+                      >
                         <ShoppingBag className="h-4 w-4 mr-2" />
                         Ajouter au panier
                       </Button>
