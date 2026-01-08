@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Montserrat:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Montserrat:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,65 +6,51 @@
 
 @layer base {
   :root {
-    /* Warm desert-inspired palette */
-    --background: 35 35% 96%;
-    --foreground: 25 30% 15%;
+    /* ZEYANI - Luxury Tuareg Heritage Palette */
+    --background: 0 0% 100%;
+    --foreground: 220 20% 10%;
 
-    --card: 35 30% 98%;
-    --card-foreground: 25 30% 15%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 20% 10%;
 
-    --popover: 35 30% 98%;
-    --popover-foreground: 25 30% 15%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 20% 10%;
 
-    /* Terracotta primary */
-    --primary: 18 55% 50%;
-    --primary-foreground: 35 35% 96%;
+    /* Indigo Tuareg - Bleu profond du désert */
+    --primary: 230 45% 25%;
+    --primary-foreground: 45 30% 96%;
 
-    /* Sand secondary */
-    --secondary: 35 25% 88%;
-    --secondary-foreground: 25 30% 20%;
+    /* Sable doré */
+    --secondary: 38 35% 92%;
+    --secondary-foreground: 220 20% 15%;
 
-    /* Muted warm tones */
-    --muted: 35 20% 90%;
-    --muted-foreground: 25 15% 45%;
+    --muted: 40 20% 96%;
+    --muted-foreground: 220 10% 45%;
 
-    /* Gold accent */
-    --accent: 40 75% 55%;
-    --accent-foreground: 25 30% 15%;
+    /* Or ancien - Accent luxueux */
+    --accent: 42 75% 50%;
+    --accent-foreground: 220 20% 10%;
 
     --destructive: 0 84% 60%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 35 20% 85%;
-    --input: 35 20% 85%;
-    --ring: 18 55% 50%;
+    --border: 40 20% 88%;
+    --input: 40 20% 88%;
+    --ring: 230 45% 25%;
+
+    /* Couleurs personnalisées ZEYANI */
+    --tuareg-blue: 230 45% 25%;
+    --tuareg-blue-light: 230 35% 40%;
+    --silver: 220 10% 75%;
+    --silver-light: 220 10% 92%;
+    --sand: 38 40% 85%;
+    --sand-light: 40 35% 96%;
+    --obsidian: 220 20% 8%;
+    --cream: 45 30% 96%;
+    --gold: 42 75% 50%;
+    --gold-dark: 38 70% 40%;
 
     --radius: 0.5rem;
-
-    /* Custom variables */
-    --gold: 40 75% 55%;
-    --gold-light: 42 70% 70%;
-    --terracotta: 18 55% 50%;
-    --terracotta-dark: 15 50% 35%;
-    --sand: 35 35% 96%;
-    --sand-dark: 35 25% 88%;
-    --chocolate: 25 30% 20%;
-    --cream: 40 40% 95%;
-
-    /* Gradients */
-    --gradient-gold: linear-gradient(135deg, hsl(40 75% 55%), hsl(42 70% 70%));
-    --gradient-hero: linear-gradient(180deg, hsl(35 35% 96% / 0) 0%, hsl(35 35% 96%) 100%);
-    --gradient-overlay: linear-gradient(180deg, hsl(25 30% 15% / 0.3) 0%, hsl(25 30% 15% / 0.6) 100%);
-
-    /* Shadows */
-    --shadow-soft: 0 4px 20px -5px hsl(25 30% 15% / 0.1);
-    --shadow-card: 0 10px 40px -15px hsl(25 30% 15% / 0.15);
-    --shadow-gold: 0 10px 30px -10px hsl(40 75% 55% / 0.3);
-
-    /* Typography */
-    --font-display: 'Cormorant Garamond', serif;
-    --font-body: 'Montserrat', sans-serif;
-
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 240 5.9% 10%;
@@ -76,33 +62,42 @@
   }
 
   .dark {
-    --background: 25 30% 10%;
-    --foreground: 35 30% 95%;
+    --background: 220 20% 6%;
+    --foreground: 45 30% 96%;
 
-    --card: 25 25% 15%;
-    --card-foreground: 35 30% 95%;
+    --card: 220 20% 8%;
+    --card-foreground: 45 30% 96%;
 
-    --popover: 25 25% 15%;
-    --popover-foreground: 35 30% 95%;
+    --popover: 220 20% 8%;
+    --popover-foreground: 45 30% 96%;
 
-    --primary: 18 55% 55%;
-    --primary-foreground: 25 30% 10%;
+    --primary: 42 75% 50%;
+    --primary-foreground: 220 20% 8%;
 
-    --secondary: 25 20% 20%;
-    --secondary-foreground: 35 30% 90%;
+    --secondary: 220 15% 15%;
+    --secondary-foreground: 45 30% 96%;
 
-    --muted: 25 15% 25%;
-    --muted-foreground: 35 15% 60%;
+    --muted: 220 15% 15%;
+    --muted-foreground: 220 10% 60%;
 
-    --accent: 40 75% 55%;
-    --accent-foreground: 25 30% 10%;
+    --accent: 230 45% 35%;
+    --accent-foreground: 45 30% 96%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 25 20% 25%;
-    --input: 25 20% 25%;
-    --ring: 18 55% 55%;
+    --border: 220 15% 18%;
+    --input: 220 15% 18%;
+    --ring: 42 75% 50%;
+
+    --sidebar-background: 220 20% 8%;
+    --sidebar-foreground: 45 30% 96%;
+    --sidebar-primary: 42 75% 50%;
+    --sidebar-primary-foreground: 220 20% 8%;
+    --sidebar-accent: 220 15% 15%;
+    --sidebar-accent-foreground: 45 30% 96%;
+    --sidebar-border: 220 15% 18%;
+    --sidebar-ring: 42 75% 50%;
   }
 }
 
@@ -112,51 +107,92 @@
   }
 
   body {
-    @apply bg-background text-foreground;
-    font-family: var(--font-body);
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Montserrat', sans-serif;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-display);
-  }
-}
-
-@layer components {
-  .text-gradient-gold {
-    background: var(--gradient-gold);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  .bg-gradient-overlay {
-    background: var(--gradient-overlay);
-  }
-
-  .shadow-gold {
-    box-shadow: var(--shadow-gold);
-  }
-
-  .shadow-card {
-    box-shadow: var(--shadow-card);
-  }
-
-  .shadow-soft {
-    box-shadow: var(--shadow-soft);
+    font-family: 'Cormorant Garamond', serif;
   }
 }
 
 @layer utilities {
+  .font-display {
+    font-family: 'Cormorant Garamond', serif;
+  }
+
+  .font-body {
+    font-family: 'Montserrat', sans-serif;
+  }
+
+  /* Gradient texte or luxueux */
+  .text-gradient-gold {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, hsl(42 75% 55%), hsl(38 70% 45%), hsl(42 75% 60%));
+  }
+
+  /* Gradient texte argenté */
+  .text-gradient-silver {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, hsl(220 10% 80%), hsl(220 10% 65%), hsl(220 10% 85%));
+  }
+
+  /* Overlay élégant pour hero */
+  .bg-gradient-overlay {
+    background: linear-gradient(
+      180deg,
+      hsla(220, 20%, 6%, 0.3) 0%,
+      hsla(220, 20%, 6%, 0.6) 50%,
+      hsla(220, 20%, 6%, 0.85) 100%
+    );
+  }
+
+  /* Overlay latéral */
+  .bg-gradient-overlay-left {
+    background: linear-gradient(
+      90deg,
+      hsla(220, 20%, 6%, 0.9) 0%,
+      hsla(220, 20%, 6%, 0.7) 40%,
+      hsla(220, 20%, 6%, 0.3) 70%,
+      transparent 100%
+    );
+  }
+
+  /* Ligne décorative dorée */
+  .gold-line {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, hsl(42 75% 50%), transparent);
+  }
+
+  /* Bordure dorée subtile */
+  .border-gold-subtle {
+    border-color: hsla(42, 75%, 50%, 0.3);
+  }
+
+  /* Shadow utilities */
+  .shadow-soft {
+    box-shadow: 0 4px 20px -5px hsla(220, 20%, 10%, 0.1);
+  }
+
+  .shadow-card {
+    box-shadow: 0 10px 40px -15px hsla(220, 20%, 10%, 0.15);
+  }
+
+  .shadow-gold {
+    box-shadow: 0 10px 30px -10px hsla(42, 75%, 50%, 0.3);
+  }
+
+  /* Animation d'apparition */
   .animate-fade-up {
     animation: fadeUp 0.8s ease-out forwards;
   }
 
   .animate-fade-in {
-    animation: fadeIn 0.6s ease-out forwards;
+    animation: fadeIn 0.5s ease-out forwards;
   }
 
-  .animate-scale-in {
-    animation: scaleIn 0.5s ease-out forwards;
+  .animate-slide-in {
+    animation: slideIn 0.6s ease-out forwards;
   }
 
   @keyframes fadeUp {
@@ -171,22 +207,63 @@
   }
 
   @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes slideIn {
     from {
       opacity: 0;
+      transform: translateX(-20px);
     }
     to {
       opacity: 1;
+      transform: translateX(0);
     }
   }
 
-  @keyframes scaleIn {
-    from {
-      opacity: 0;
-      transform: scale(0.95);
-    }
-    to {
-      opacity: 1;
-      transform: scale(1);
-    }
+  /* Effet de brillance */
+  .shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .shimmer::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      hsla(42, 75%, 50%, 0.15),
+      transparent
+    );
+    animation: shimmer 3s infinite;
+  }
+
+  @keyframes shimmer {
+    0% { left: -100%; }
+    50%, 100% { left: 100%; }
+  }
+
+  /* Scrollbar personnalisée */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--muted));
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--primary));
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--tuareg-blue-light));
   }
 }

@@ -1,6 +1,6 @@
 import { Button } from "./ui/button";
 import { ArrowRight } from "lucide-react";
-import heroImage from "@/assets/hero-jewelry.jpg";
+import heroImage from "@/assets/hero-croix-agadez.jpg";
 
 const Hero = () => {
   return (
@@ -9,7 +9,7 @@ const Hero = () => {
       <div className="absolute inset-0">
         <img
           src={heroImage}
-          alt="Collection de bijoux Touareg du Niger"
+          alt="Croix d'Agadez - Bijou ancestral du Niger"
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-overlay" />
@@ -17,20 +17,24 @@ const Hero = () => {
 
       {/* Content */}
       <div className="relative z-10 container mx-auto px-4 lg:px-8 text-center">
-        <div className="max-w-3xl mx-auto animate-fade-up">
-          <span className="inline-block mb-4 px-4 py-2 bg-accent/20 backdrop-blur-sm rounded-full text-cream font-medium text-sm tracking-widest uppercase">
-            Artisanat du Niger
+        <div className="max-w-4xl mx-auto animate-fade-up">
+          {/* Decorative line */}
+          <div className="gold-line w-24 mx-auto mb-8" />
+          
+          <span className="inline-block mb-6 px-6 py-2 border border-gold/30 rounded-full text-cream font-medium text-sm tracking-[0.3em] uppercase">
+            Artisanat d'Exception
           </span>
           
-          <h1 className="font-display text-4xl md:text-6xl lg:text-7xl font-bold text-cream mb-6 leading-tight">
-            L'Élégance
+          <h1 className="font-display text-5xl md:text-7xl lg:text-8xl font-light text-cream mb-6 leading-[1.1] tracking-wide">
+            La Croix
             <br />
-            <span className="text-gradient-gold">Sahélienne</span>
+            <span className="text-gradient-gold font-semibold">d'Agadez</span>
           </h1>
           
-          <p className="text-lg md:text-xl text-cream/90 mb-8 max-w-2xl mx-auto font-light leading-relaxed">
-            Découvrez notre collection exclusive de bijoux artisanaux du Niger. 
-            Chaque pièce raconte l'histoire millénaire des artisans Touaregs.
+          <p className="text-lg md:text-xl text-cream/85 mb-10 max-w-2xl mx-auto font-light leading-relaxed tracking-wide">
+            Symbole ancestral du Niger, transmis de génération en génération. 
+            Découvrez l'héritage Touareg à travers nos créations uniques, 
+            directement de France.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
@@ -38,7 +42,11 @@ const Hero = () => {
               Découvrir la Collection
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
-            <Button variant="heroOutline" size="xl" className="text-cream border-cream/50 hover:bg-cream/10">
+            <Button 
+              variant="heroOutline" 
+              size="xl" 
+              className="text-cream border-cream/40 hover:bg-cream/10 hover:border-cream"
+            >
               Notre Histoire
             </Button>
           </div>
@@ -47,10 +55,14 @@ const Hero = () => {
 
       {/* Scroll indicator */}
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
-        <div className="w-6 h-10 border-2 border-cream/50 rounded-full flex justify-center pt-2">
-          <div className="w-1.5 h-3 bg-cream/70 rounded-full" />
+        <div className="w-6 h-10 border-2 border-cream/40 rounded-full flex justify-center pt-2">
+          <div className="w-1.5 h-3 bg-gold rounded-full" />
         </div>
       </div>
+
+      {/* Decorative corners */}
+      <div className="absolute top-24 left-8 w-20 h-20 border-l-2 border-t-2 border-gold/20 hidden lg:block" />
+      <div className="absolute bottom-24 right-8 w-20 h-20 border-r-2 border-b-2 border-gold/20 hidden lg:block" />
     </section>
   );
 };
