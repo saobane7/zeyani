@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { Button } from "./ui/button";
 import { ArrowRight } from "lucide-react";
 import heroImage from "@/assets/hero-croix-agadez.jpg";
@@ -38,17 +39,21 @@ const Hero = () => {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Button variant="gold" size="xl">
-              Découvrir la Collection
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-            <Button 
-              variant="heroOutline" 
-              size="xl" 
-              className="text-cream border-cream/40 hover:bg-cream/10 hover:border-cream"
-            >
-              Notre Histoire
-            </Button>
+            <Link to="/collection">
+              <Button variant="gold" size="xl">
+                Découvrir la Collection
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </Link>
+            <Link to="/notre-histoire">
+              <Button 
+                variant="heroOutline" 
+                size="xl" 
+                className="text-cream border-cream/40 hover:bg-cream/10 hover:border-cream"
+              >
+                Notre Histoire
+              </Button>
+            </Link>
           </div>
         </div>
       </div>

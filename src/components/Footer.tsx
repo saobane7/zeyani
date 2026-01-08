@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { Facebook, Instagram, MapPin, Phone, Mail } from "lucide-react";
 
 const Footer = () => {
@@ -5,22 +6,22 @@ const Footer = () => {
 
   const footerLinks = {
     boutique: [
-      { name: "Croix d'Agadez", href: "#" },
-      { name: "Pendentifs", href: "#" },
-      { name: "Bracelets", href: "#" },
-      { name: "Nouvelles Arrivées", href: "#" },
+      { name: "Croix d'Agadez", href: "/collection" },
+      { name: "Bracelets", href: "/collection" },
+      { name: "Colliers", href: "/collection" },
+      { name: "Bagues", href: "/collection" },
     ],
     informations: [
-      { name: "Notre Histoire", href: "#about" },
-      { name: "L'Héritage Touareg", href: "#heritage" },
-      { name: "Guide des Tailles", href: "#" },
-      { name: "Entretien des Bijoux", href: "#" },
+      { name: "Notre Histoire", href: "/notre-histoire" },
+      { name: "L'Héritage Touareg", href: "/notre-histoire" },
+      { name: "Guide des Tailles", href: "/contact" },
+      { name: "Entretien des Bijoux", href: "/contact" },
     ],
     service: [
-      { name: "Contact", href: "#contact" },
-      { name: "Livraison", href: "#" },
-      { name: "Retours", href: "#" },
-      { name: "FAQ", href: "#" },
+      { name: "Contact", href: "/contact" },
+      { name: "Livraison", href: "/contact" },
+      { name: "Retours", href: "/contact" },
+      { name: "FAQ", href: "/contact" },
     ],
   };
 
@@ -35,9 +36,11 @@ const Footer = () => {
         <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-12">
           {/* Brand */}
           <div className="lg:col-span-2">
-            <h3 className="font-display text-3xl font-bold mb-2 tracking-wider">
-              <span className="text-gradient-gold">ZEYANI</span>
-            </h3>
+            <Link to="/">
+              <h3 className="font-display text-3xl font-bold mb-2 tracking-wider">
+                <span className="text-gradient-gold">ZEYANI</span>
+              </h3>
+            </Link>
             <p className="text-sm text-cream/50 mb-4 tracking-widest uppercase">
               L'Élégance Touareg
             </p>
@@ -55,7 +58,7 @@ const Footer = () => {
               </div>
               <div className="flex items-center gap-3 text-cream/60 text-sm">
                 <Phone className="h-4 w-4 text-gold" />
-                <span>+33 1 XX XX XX XX</span>
+                <span>+33 1 23 45 67 89</span>
               </div>
               <div className="flex items-center gap-3 text-cream/60 text-sm">
                 <Mail className="h-4 w-4 text-gold" />
@@ -84,12 +87,12 @@ const Footer = () => {
             <ul className="space-y-3">
               {footerLinks.boutique.map((link) => (
                 <li key={link.name}>
-                  <a
-                    href={link.href}
+                  <Link
+                    to={link.href}
                     className="text-cream/60 hover:text-gold transition-colors duration-200 text-sm"
                   >
                     {link.name}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -101,12 +104,12 @@ const Footer = () => {
             <ul className="space-y-3">
               {footerLinks.informations.map((link) => (
                 <li key={link.name}>
-                  <a
-                    href={link.href}
+                  <Link
+                    to={link.href}
                     className="text-cream/60 hover:text-gold transition-colors duration-200 text-sm"
                   >
                     {link.name}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -118,12 +121,12 @@ const Footer = () => {
             <ul className="space-y-3">
               {footerLinks.service.map((link) => (
                 <li key={link.name}>
-                  <a
-                    href={link.href}
+                  <Link
+                    to={link.href}
                     className="text-cream/60 hover:text-gold transition-colors duration-200 text-sm"
                   >
                     {link.name}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -139,15 +142,15 @@ const Footer = () => {
               © {currentYear} ZEYANI. Tous droits réservés.
             </p>
             <div className="flex gap-6 text-sm">
-              <a href="#" className="text-cream/40 hover:text-gold transition-colors">
+              <Link to="/contact" className="text-cream/40 hover:text-gold transition-colors">
                 Mentions Légales
-              </a>
-              <a href="#" className="text-cream/40 hover:text-gold transition-colors">
+              </Link>
+              <Link to="/contact" className="text-cream/40 hover:text-gold transition-colors">
                 Confidentialité
-              </a>
-              <a href="#" className="text-cream/40 hover:text-gold transition-colors">
+              </Link>
+              <Link to="/contact" className="text-cream/40 hover:text-gold transition-colors">
                 CGV
-              </a>
+              </Link>
             </div>
           </div>
         </div>

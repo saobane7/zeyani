@@ -1,49 +1,11 @@
+import { Link } from "react-router-dom";
 import { Heart, ShoppingBag, Eye } from "lucide-react";
 import { Button } from "./ui/button";
-import croix1 from "@/assets/croix-agadez-1.jpg";
-import croix2 from "@/assets/croix-agadez-2.jpg";
-import croix3 from "@/assets/croix-agadez-3.jpg";
-
-const products = [
-  {
-    id: 1,
-    name: "Croix d'Agadez Classique",
-    description: "La croix traditionnelle, symbole de protection",
-    price: 189,
-    image: croix1,
-    material: "Argent 925",
-    isNew: true,
-  },
-  {
-    id: 2,
-    name: "Croix d'Agadez Royale",
-    description: "Motifs ornementaux élaborés",
-    price: 289,
-    originalPrice: 329,
-    image: croix2,
-    material: "Argent & Or",
-    isNew: false,
-  },
-  {
-    id: 3,
-    name: "Croix d'Agadez Élégance",
-    description: "Design épuré et moderne",
-    price: 159,
-    image: croix3,
-    material: "Argent 925",
-    isNew: true,
-  },
-];
-
-const formatPrice = (price: number) => {
-  return new Intl.NumberFormat("fr-FR", {
-    style: "currency",
-    currency: "EUR",
-    minimumFractionDigits: 0,
-  }).format(price);
-};
+import { products, formatPrice } from "@/data/products";
 
 const FeaturedProducts = () => {
+  const featuredProducts = products.slice(0, 3);
+
   return (
     <section id="collection" className="py-24 lg:py-32 bg-sand-light">
       <div className="container mx-auto px-4 lg:px-8">
@@ -64,13 +26,13 @@ const FeaturedProducts = () => {
 
         {/* Products Grid */}
         <div className="grid md:grid-cols-3 gap-8 lg:gap-12">
-          {products.map((product) => (
+          {featuredProducts.map((product) => (
             <div
               key={product.id}
               className="group bg-card rounded-lg overflow-hidden shadow-soft hover:shadow-card transition-all duration-500"
             >
               {/* Image Container */}
-              <div className="relative aspect-square overflow-hidden bg-secondary">
+              <Link to={`/produit/${product.slug}`} className="block relative aspect-square overflow-hidden bg-secondary">
                 <img
                   src={product.image}
                   alt={product.name}
@@ -86,7 +48,7 @@ const FeaturedProducts = () => {
                   )}
                   {product.originalPrice && (
                     <span className="bg-primary text-primary-foreground px-3 py-1 rounded-full text-xs font-semibold tracking-wide">
-                      -12%
+                      -{Math.round((1 - product.price / product.originalPrice) * 100)}%
                     </span>
                   )}
                 </div>
@@ -96,9 +58,11 @@ const FeaturedProducts = () => {
                   <Button variant="secondary" size="icon" className="rounded-full shadow-soft h-10 w-10">
                     <Heart className="h-4 w-4" />
                   </Button>
-                  <Button variant="secondary" size="icon" className="rounded-full shadow-soft h-10 w-10">
-                    <Eye className="h-4 w-4" />
-                  </Button>
+                  <Link to={`/produit/${product.slug}`}>
+                    <Button variant="secondary" size="icon" className="rounded-full shadow-soft h-10 w-10">
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                  </Link>
                 </div>
 
                 {/* Add to cart overlay */}
@@ -108,16 +72,18 @@ const FeaturedProducts = () => {
                     Ajouter au panier
                   </Button>
                 </div>
-              </div>
+              </Link>
 
               {/* Product Info */}
               <div className="p-6">
                 <span className="text-xs text-muted-foreground uppercase tracking-widest">
                   {product.material}
                 </span>
-                <h3 className="font-display text-xl font-semibold text-foreground mt-2 mb-2">
-                  {product.name}
-                </h3>
+                <Link to={`/produit/${product.slug}`}>
+                  <h3 className="font-display text-xl font-semibold text-foreground mt-2 mb-2 hover:text-gold-dark transition-colors">
+                    {product.name}
+                  </h3>
+                </Link>
                 <p className="text-muted-foreground text-sm mb-4">
                   {product.description}
                 </p>
@@ -138,9 +104,11 @@ const FeaturedProducts = () => {
 
         {/* View All Button */}
         <div className="text-center mt-16">
-          <Button variant="tuareg" size="lg" className="px-12">
-            Voir Toute la Collection
-          </Button>
+          <Link to="/collection">
+            <Button variant="tuareg" size="lg" className="px-12">
+              Voir Toute la Collection
+            </Button>
+          </Link>
         </div>
       </div>
     </section>
