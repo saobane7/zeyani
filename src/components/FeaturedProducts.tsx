@@ -2,8 +2,10 @@ import { Link } from "react-router-dom";
 import { Heart, ShoppingBag, Eye } from "lucide-react";
 import { Button } from "./ui/button";
 import { products, formatPrice } from "@/data/products";
+import { useCart } from "@/contexts/CartContext";
 
 const FeaturedProducts = () => {
+  const { addToCart } = useCart();
   const featuredProducts = products.slice(0, 3);
 
   return (
@@ -67,7 +69,14 @@ const FeaturedProducts = () => {
 
                 {/* Add to cart overlay */}
                 <div className="absolute inset-x-4 bottom-4 opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-300">
-                  <Button variant="gold" className="w-full rounded-full">
+                  <Button 
+                    variant="gold" 
+                    className="w-full rounded-full"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      addToCart(product);
+                    }}
+                  >
                     <ShoppingBag className="h-4 w-4 mr-2" />
                     Ajouter au panier
                   </Button>

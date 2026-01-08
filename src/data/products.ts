@@ -6,7 +6,7 @@ import necklace1 from "@/assets/necklace-1.jpg";
 import ring1 from "@/assets/ring-1.jpg";
 
 export interface Product {
-  id: number;
+  id: string;
   slug: string;
   name: string;
   description: string;
@@ -25,7 +25,7 @@ export interface Product {
 
 export const products: Product[] = [
   {
-    id: 1,
+    id: "1",
     slug: "croix-agadez-classique",
     name: "Croix d'Agadez Classique",
     description: "La croix traditionnelle, symbole de protection",
@@ -41,7 +41,7 @@ export const products: Product[] = [
     dimensions: "5cm x 4cm",
   },
   {
-    id: 2,
+    id: "2",
     slug: "croix-agadez-royale",
     name: "Croix d'Agadez Royale",
     description: "Motifs ornementaux élaborés",
@@ -58,7 +58,7 @@ export const products: Product[] = [
     dimensions: "6cm x 5cm",
   },
   {
-    id: 3,
+    id: "3",
     slug: "croix-agadez-elegance",
     name: "Croix d'Agadez Élégance",
     description: "Design épuré et moderne",
@@ -74,7 +74,7 @@ export const products: Product[] = [
     dimensions: "4cm x 3.5cm",
   },
   {
-    id: 4,
+    id: "4",
     slug: "bracelet-touareg-traditionnel",
     name: "Bracelet Touareg Traditionnel",
     description: "Bracelet en argent avec motifs géométriques",
@@ -90,7 +90,7 @@ export const products: Product[] = [
     dimensions: "Ajustable",
   },
   {
-    id: 5,
+    id: "5",
     slug: "collier-perles-niger",
     name: "Collier Perles du Niger",
     description: "Collier de perles traditionnelles du Niger",
@@ -106,7 +106,7 @@ export const products: Product[] = [
     dimensions: "45cm",
   },
   {
-    id: 6,
+    id: "6",
     slug: "bague-touareg-gravee",
     name: "Bague Touareg Gravée",
     description: "Bague en argent avec gravures ancestrales",

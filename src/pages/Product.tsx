@@ -5,8 +5,10 @@ import { Button } from "@/components/ui/button";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { getProductBySlug, products, formatPrice } from "@/data/products";
+import { useCart } from "@/contexts/CartContext";
 
 const Product = () => {
+  const { addToCart } = useCart();
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const product = getProductBySlug(slug || "");
@@ -162,7 +164,12 @@ const Product = () => {
 
               {/* Actions */}
               <div className="flex gap-4 mb-8">
-                <Button variant="gold" size="lg" className="flex-1">
+                <Button 
+                  variant="gold" 
+                  size="lg" 
+                  className="flex-1"
+                  onClick={() => addToCart(product, quantity)}
+                >
                   <ShoppingBag className="h-5 w-5 mr-2" />
                   Ajouter au panier
                 </Button>
