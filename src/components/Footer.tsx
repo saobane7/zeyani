@@ -1,8 +1,13 @@
 import { Link } from "react-router-dom";
-import { Facebook, Instagram, MapPin, Phone, Mail } from "lucide-react";
+import { Facebook, Instagram, MapPin, Phone, Mail, ArrowUp } from "lucide-react";
+import { Button } from "./ui/button";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   const footerLinks = {
     boutique: [
@@ -31,49 +36,59 @@ const Footer = () => {
   ];
 
   return (
-    <footer id="contact" className="bg-obsidian text-cream">
-      <div className="container mx-auto px-4 lg:px-8 py-16">
-        <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-12">
+    <footer id="contact" className="bg-obsidian text-cream relative">
+      {/* Scroll to top button */}
+      <Button
+        variant="ghost"
+        size="icon"
+        className="absolute -top-5 left-1/2 -translate-x-1/2 h-10 w-10 rounded-full bg-gold text-obsidian hover:bg-gold-dark hover:text-cream shadow-gold transition-all"
+        onClick={scrollToTop}
+      >
+        <ArrowUp className="h-5 w-5" />
+      </Button>
+
+      <div className="container mx-auto px-4 lg:px-8 pt-16 pb-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8 lg:gap-12">
           {/* Brand */}
-          <div className="lg:col-span-2">
+          <div className="col-span-2 md:col-span-3 lg:col-span-2">
             <Link to="/">
-              <h3 className="font-display text-3xl font-bold mb-2 tracking-wider">
+              <h3 className="font-display text-2xl sm:text-3xl font-bold mb-2 tracking-wider">
                 <span className="text-gradient-gold">ZEYANI</span>
               </h3>
             </Link>
-            <p className="text-sm text-cream/50 mb-4 tracking-widest uppercase">
+            <p className="text-xs sm:text-sm text-cream/50 mb-4 tracking-widest uppercase">
               L'Élégance Touareg
             </p>
-            <p className="text-cream/60 mb-6 leading-relaxed max-w-md text-sm">
+            <p className="text-cream/60 mb-6 leading-relaxed max-w-md text-xs sm:text-sm">
               Bijoux artisanaux authentiques du Niger. La Croix d'Agadez, 
               symbole ancestral transmis de génération en génération, 
               désormais accessible depuis la France.
             </p>
             
             {/* Contact */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-3 text-cream/60 text-sm">
-                <MapPin className="h-4 w-4 text-gold" />
+            <div className="space-y-2 sm:space-y-3">
+              <div className="flex items-center gap-3 text-cream/60 text-xs sm:text-sm">
+                <MapPin className="h-4 w-4 text-gold flex-shrink-0" />
                 <span>France - Livraison Internationale</span>
               </div>
-              <div className="flex items-center gap-3 text-cream/60 text-sm">
-                <Phone className="h-4 w-4 text-gold" />
+              <a href="tel:+33123456789" className="flex items-center gap-3 text-cream/60 text-xs sm:text-sm hover:text-gold transition-colors">
+                <Phone className="h-4 w-4 text-gold flex-shrink-0" />
                 <span>+33 1 23 45 67 89</span>
-              </div>
-              <div className="flex items-center gap-3 text-cream/60 text-sm">
-                <Mail className="h-4 w-4 text-gold" />
+              </a>
+              <a href="mailto:contact@zeyani.fr" className="flex items-center gap-3 text-cream/60 text-xs sm:text-sm hover:text-gold transition-colors">
+                <Mail className="h-4 w-4 text-gold flex-shrink-0" />
                 <span>contact@zeyani.fr</span>
-              </div>
+              </a>
             </div>
 
             {/* Social Links */}
-            <div className="flex gap-4 mt-6">
+            <div className="flex gap-3 mt-6">
               {socialLinks.map((social) => (
                 <a
                   key={social.label}
                   href={social.href}
                   aria-label={social.label}
-                  className="w-10 h-10 rounded-full bg-cream/10 hover:bg-gold flex items-center justify-center transition-colors duration-300"
+                  className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-cream/10 hover:bg-gold flex items-center justify-center transition-colors duration-300"
                 >
                   <social.icon className="h-4 w-4" />
                 </a>
@@ -83,13 +98,13 @@ const Footer = () => {
 
           {/* Boutique */}
           <div>
-            <h4 className="font-display text-lg font-semibold mb-4 text-cream">Boutique</h4>
-            <ul className="space-y-3">
+            <h4 className="font-display text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-cream">Boutique</h4>
+            <ul className="space-y-2 sm:space-y-3">
               {footerLinks.boutique.map((link) => (
                 <li key={link.name}>
                   <Link
                     to={link.href}
-                    className="text-cream/60 hover:text-gold transition-colors duration-200 text-sm"
+                    className="text-cream/60 hover:text-gold transition-colors duration-200 text-xs sm:text-sm"
                   >
                     {link.name}
                   </Link>
@@ -100,13 +115,13 @@ const Footer = () => {
 
           {/* Informations */}
           <div>
-            <h4 className="font-display text-lg font-semibold mb-4 text-cream">Informations</h4>
-            <ul className="space-y-3">
+            <h4 className="font-display text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-cream">Informations</h4>
+            <ul className="space-y-2 sm:space-y-3">
               {footerLinks.informations.map((link) => (
                 <li key={link.name}>
                   <Link
                     to={link.href}
-                    className="text-cream/60 hover:text-gold transition-colors duration-200 text-sm"
+                    className="text-cream/60 hover:text-gold transition-colors duration-200 text-xs sm:text-sm"
                   >
                     {link.name}
                   </Link>
@@ -117,13 +132,13 @@ const Footer = () => {
 
           {/* Service Client */}
           <div>
-            <h4 className="font-display text-lg font-semibold mb-4 text-cream">Service Client</h4>
-            <ul className="space-y-3">
+            <h4 className="font-display text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-cream">Service Client</h4>
+            <ul className="space-y-2 sm:space-y-3">
               {footerLinks.service.map((link) => (
                 <li key={link.name}>
                   <Link
                     to={link.href}
-                    className="text-cream/60 hover:text-gold transition-colors duration-200 text-sm"
+                    className="text-cream/60 hover:text-gold transition-colors duration-200 text-xs sm:text-sm"
                   >
                     {link.name}
                   </Link>
@@ -136,12 +151,12 @@ const Footer = () => {
 
       {/* Bottom Bar */}
       <div className="border-t border-cream/10">
-        <div className="container mx-auto px-4 lg:px-8 py-6">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-cream/40 text-sm">
+        <div className="container mx-auto px-4 lg:px-8 py-4 sm:py-6">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+            <p className="text-cream/40 text-xs sm:text-sm text-center sm:text-left">
               © {currentYear} ZEYANI. Tous droits réservés.
             </p>
-            <div className="flex gap-6 text-sm">
+            <div className="flex flex-wrap justify-center gap-4 sm:gap-6 text-xs sm:text-sm">
               <Link to="/contact" className="text-cream/40 hover:text-gold transition-colors">
                 Mentions Légales
               </Link>
