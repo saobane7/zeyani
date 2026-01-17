@@ -49,6 +49,10 @@ const Product = () => {
     : null;
 
   const currentPrice = selectedVariant ? selectedVariant.price : product.price;
+  
+  // Image dynamique selon la variante sélectionnée
+  const variantKey = `${selectedType}-${selectedColor}`;
+  const currentImage = product.variantImages?.[variantKey] || product.images[selectedImage];
 
   const handleAddToCart = () => {
     const productToAdd = {
@@ -107,13 +111,13 @@ const Product = () => {
             >
               <div className="aspect-square bg-secondary rounded-lg overflow-hidden">
                 <motion.img
-                  key={selectedImage}
-                  src={product.images[selectedImage]}
+                  key={product.hasVariants ? variantKey : selectedImage}
+                  src={product.hasVariants && product.variantImages ? currentImage : product.images[selectedImage]}
                   alt={product.name}
                   className="w-full h-full object-cover"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.3 }}
+                  initial={{ opacity: 0, scale: 1.05 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.4 }}
                 />
               </div>
               {product.images.length > 1 && (

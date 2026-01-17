@@ -11,12 +11,19 @@ import braceletTuareg from "@/assets/bracelet-tuareg.jpg";
 import necklace1 from "@/assets/necklace-1.jpg";
 import ring1 from "@/assets/ring-1.jpg";
 
+// Images des variantes pour Agadez
+import croixAgadezChaineDore from "@/assets/croix-agadez-chaine-dore.jpg";
+import croixAgadezChaineArgente from "@/assets/croix-agadez-chaine-argente.jpg";
+import croixAgadezPerleDore from "@/assets/croix-agadez-perle-dore.jpg";
+import croixAgadezPerleArgente from "@/assets/croix-agadez-perle-argente.jpg";
+
 export interface ProductVariant {
   id: string;
   type: "chaine" | "perle";
   color: "dore" | "argente";
   price: number;
   label: string;
+  image?: string;
 }
 
 export interface Product {
@@ -37,6 +44,7 @@ export interface Product {
   dimensions?: string;
   hasVariants?: boolean;
   variants?: ProductVariant[];
+  variantImages?: Record<string, string>;
 }
 
 // Descriptions des croix pour le carrousel
@@ -79,12 +87,12 @@ export const crossDescriptions = [
   },
 ];
 
-// Générer les variantes pour chaque croix collier
-const generateNecklaceVariants = (): ProductVariant[] => [
-  { id: "chaine-argente", type: "chaine", color: "argente", price: 23, label: "Chaîne Argentée" },
-  { id: "chaine-dore", type: "chaine", color: "dore", price: 23, label: "Chaîne Dorée" },
-  { id: "perle-argente", type: "perle", color: "argente", price: 25, label: "Perles Argentées" },
-  { id: "perle-dore", type: "perle", color: "dore", price: 25, label: "Perles Dorées" },
+// Générer les variantes pour chaque croix collier avec images
+const generateNecklaceVariants = (hasImages: boolean = false): ProductVariant[] => [
+  { id: "chaine-argente", type: "chaine", color: "argente", price: 23, label: "Chaîne Argentée", image: hasImages ? croixAgadezChaineArgente : undefined },
+  { id: "chaine-dore", type: "chaine", color: "dore", price: 23, label: "Chaîne Dorée", image: hasImages ? croixAgadezChaineDore : undefined },
+  { id: "perle-argente", type: "perle", color: "argente", price: 25, label: "Perles Argentées", image: hasImages ? croixAgadezPerleArgente : undefined },
+  { id: "perle-dore", type: "perle", color: "dore", price: 25, label: "Perles Dorées", image: hasImages ? croixAgadezPerleDore : undefined },
 ];
 
 export const products: Product[] = [
@@ -105,7 +113,13 @@ export const products: Product[] = [
     weight: "15g",
     dimensions: "Pendentif 3cm, Chaîne 45cm",
     hasVariants: true,
-    variants: generateNecklaceVariants(),
+    variants: generateNecklaceVariants(true),
+    variantImages: {
+      "chaine-argente": croixAgadezChaineArgente,
+      "chaine-dore": croixAgadezChaineDore,
+      "perle-argente": croixAgadezPerleArgente,
+      "perle-dore": croixAgadezPerleDore,
+    },
   },
   {
     id: "2",
