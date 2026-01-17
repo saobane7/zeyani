@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Heart, ShoppingBag, Eye, Filter, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -10,9 +10,29 @@ import { useCart } from "@/contexts/CartContext";
 
 const Collection = () => {
   const { addToCart } = useCart();
-  const [activeCategory, setActiveCategory] = useState("tous");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const categoryFromUrl = searchParams.get("category") || "tous";
+  const [activeCategory, setActiveCategory] = useState(categoryFromUrl);
   const [showFilters, setShowFilters] = useState(false);
+  
+  useEffect(() => {
+    const categoryParam = searchParams.get("category");
+    if (categoryParam) {
+      setActiveCategory(categoryParam);
+    }
+  }, [searchParams]);
+
   const filteredProducts = getProductsByCategory(activeCategory);
+
+  const handleCategoryChange = (slug: string) => {
+    setActiveCategory(slug);
+    if (slug === "tous") {
+      setSearchParams({});
+    } else {
+      setSearchParams({ category: slug });
+    }
+    setShowFilters(false);
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -28,7 +48,15 @@ const Collection = () => {
           >
             <div className="gold-line w-16 mx-auto mb-4 sm:mb-6" />
             <h1 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light text-cream mb-3 sm:mb-4">
-              Notre <span className="text-gradient-gold font-semibold">Collection</span>
+              {activeCategory === "tous" ? (
+                <>Notre <span className="text-gradient-gold font-semibold">Collection</span></>
+              ) : activeCategory === "colliers" ? (
+                <>Nos <span className="text-gradient-gold font-semibold">Colliers</span></>
+              ) : activeCategory === "bracelets" ? (
+                <>Nos <span className="text-gradient-gold font-semibold">Bracelets</span></>
+              ) : (
+                <>Nos <span className="text-gradient-gold font-semibold">Bagues</span></>
+              )}
             </h1>
             <p className="text-cream/80 max-w-2xl mx-auto text-base sm:text-lg px-4">
               Découvrez nos créations artisanales authentiques, 
@@ -71,10 +99,7 @@ const Collection = () => {
                   key={category.slug}
                   variant={activeCategory === category.slug ? "gold" : "outline"}
                   size="sm"
-                  onClick={() => {
-                    setActiveCategory(category.slug);
-                    setShowFilters(false);
-                  }}
+                  onClick={() => handleCategoryChange(category.slug)}
                   className="rounded-full text-xs sm:text-sm"
                 >
                   {category.name}
@@ -107,8 +132,13 @@ const Collection = () => {
                           Nouveau
                         </span>
                       )}
-                      {product.originalPrice && (
+                      {product.hasVariants && (
                         <span className="bg-primary text-primary-foreground px-2 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold tracking-wide">
+                          Options
+                        </span>
+                      )}
+                      {product.originalPrice && (
+                        <span className="bg-destructive text-destructive-foreground px-2 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold tracking-wide">
                           -{Math.round((1 - product.price / product.originalPrice) * 100)}%
                         </span>
                       )}
@@ -128,17 +158,26 @@ const Collection = () => {
 
                     {/* Add to cart overlay - Desktop */}
                     <div className="absolute inset-x-4 bottom-4 opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-300 hidden lg:block">
-                      <Button 
-                        variant="gold" 
-                        className="w-full rounded-full"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          addToCart(product);
-                        }}
-                      >
-                        <ShoppingBag className="h-4 w-4 mr-2" />
-                        Ajouter au panier
-                      </Button>
+                      {product.hasVariants ? (
+                        <Link to={`/produit/${product.slug}`}>
+                          <Button variant="gold" className="w-full rounded-full">
+                            <Eye className="h-4 w-4 mr-2" />
+                            Voir les options
+                          </Button>
+                        </Link>
+                      ) : (
+                        <Button 
+                          variant="gold" 
+                          className="w-full rounded-full"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            addToCart(product);
+                          }}
+                        >
+                          <ShoppingBag className="h-4 w-4 mr-2" />
+                          Ajouter au panier
+                        </Button>
+                      )}
                     </div>
                   </Link>
 
@@ -158,7 +197,11 @@ const Collection = () => {
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
                         <span className="text-sm sm:text-base lg:text-lg font-bold text-gold-dark">
-                          {formatPrice(product.price)}
+                          {product.hasVariants ? (
+                            <>Dès {formatPrice(product.price)}</>
+                          ) : (
+                            formatPrice(product.price)
+                          )}
                         </span>
                         {product.originalPrice && (
                           <span className="text-[10px] sm:text-sm text-muted-foreground line-through">
@@ -167,14 +210,26 @@ const Collection = () => {
                         )}
                       </div>
                       {/* Mobile add button */}
-                      <Button 
-                        variant="ghost" 
-                        size="icon"
-                        className="lg:hidden h-8 w-8 sm:h-10 sm:w-10 rounded-full hover:bg-gold/10"
-                        onClick={() => addToCart(product)}
-                      >
-                        <ShoppingBag className="h-4 w-4 sm:h-5 sm:w-5 text-gold-dark" />
-                      </Button>
+                      {product.hasVariants ? (
+                        <Link to={`/produit/${product.slug}`}>
+                          <Button 
+                            variant="ghost" 
+                            size="icon"
+                            className="lg:hidden h-8 w-8 sm:h-10 sm:w-10 rounded-full hover:bg-gold/10"
+                          >
+                            <Eye className="h-4 w-4 sm:h-5 sm:w-5 text-gold-dark" />
+                          </Button>
+                        </Link>
+                      ) : (
+                        <Button 
+                          variant="ghost" 
+                          size="icon"
+                          className="lg:hidden h-8 w-8 sm:h-10 sm:w-10 rounded-full hover:bg-gold/10"
+                          onClick={() => addToCart(product)}
+                        >
+                          <ShoppingBag className="h-4 w-4 sm:h-5 sm:w-5 text-gold-dark" />
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </motion.div>
@@ -193,7 +248,7 @@ const Collection = () => {
                 <Button 
                   variant="outline" 
                   className="mt-4"
-                  onClick={() => setActiveCategory("tous")}
+                  onClick={() => handleCategoryChange("tous")}
                 >
                   Voir tous les produits
                 </Button>
