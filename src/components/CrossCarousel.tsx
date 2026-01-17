@@ -30,7 +30,7 @@ const CrossCarousel = () => {
   useEffect(() => {
     if (!isAutoPlaying) return;
     
-    const interval = setInterval(nextSlide, 4000);
+    const interval = setInterval(nextSlide, 30000); // 30 secondes
     return () => clearInterval(interval);
   }, [isAutoPlaying, nextSlide]);
 
