@@ -24,8 +24,8 @@ const Header = () => {
 
   const navLinks = [
     { name: "Accueil", href: "/" },
-    { name: "Collection", href: "/collection" },
-    { name: "La Croix d'Agadez", href: "/#heritage" },
+    { name: "Colliers", href: "/collection?category=colliers" },
+    { name: "Bracelets", href: "/collection?category=bracelets" },
     { name: "Notre Histoire", href: "/notre-histoire" },
     { name: "Contact", href: "/contact" },
   ];

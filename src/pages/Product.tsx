@@ -3,9 +3,11 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Heart, ShoppingBag, Truck, Shield, RotateCcw, Minus, Plus, ChevronLeft, Check, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { getProductBySlug, products, formatPrice } from "@/data/products";
+import { getProductBySlug, products, formatPrice, ProductVariant } from "@/data/products";
 import { useCart } from "@/contexts/CartContext";
 
 const Product = () => {
@@ -16,6 +18,10 @@ const Product = () => {
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
   const [isAdded, setIsAdded] = useState(false);
+  
+  // Variantes
+  const [selectedType, setSelectedType] = useState<"chaine" | "perle">("chaine");
+  const [selectedColor, setSelectedColor] = useState<"dore" | "argente">("argente");
 
   if (!product) {
     return (
@@ -37,8 +43,22 @@ const Product = () => {
     );
   }
 
+  // Trouver la variante sélectionnée
+  const selectedVariant = product.hasVariants && product.variants
+    ? product.variants.find(v => v.type === selectedType && v.color === selectedColor)
+    : null;
+
+  const currentPrice = selectedVariant ? selectedVariant.price : product.price;
+
   const handleAddToCart = () => {
-    addToCart(product, quantity);
+    const productToAdd = {
+      ...product,
+      price: currentPrice,
+      name: selectedVariant 
+        ? `${product.name} - ${selectedVariant.label}`
+        : product.name,
+    };
+    addToCart(productToAdd, quantity);
     setIsAdded(true);
     setTimeout(() => setIsAdded(false), 2000);
   };
@@ -57,6 +77,10 @@ const Product = () => {
             <Link to="/" className="hover:text-foreground transition-colors">Accueil</Link>
             <span>/</span>
             <Link to="/collection" className="hover:text-foreground transition-colors">Collection</Link>
+            <span>/</span>
+            <Link to={`/collection?category=${product.category.toLowerCase()}`} className="hover:text-foreground transition-colors">
+              {product.category}
+            </Link>
             <span>/</span>
             <span className="text-foreground line-clamp-1">{product.name}</span>
           </nav>
@@ -135,7 +159,7 @@ const Product = () => {
               {/* Price */}
               <div className="flex items-baseline gap-3 sm:gap-4 mb-4 sm:mb-6">
                 <span className="text-2xl sm:text-3xl font-bold text-gold-dark">
-                  {formatPrice(product.price)}
+                  {formatPrice(currentPrice)}
                 </span>
                 {product.originalPrice && (
                   <span className="text-lg sm:text-xl text-muted-foreground line-through">
@@ -149,25 +173,117 @@ const Product = () => {
                 {product.longDescription}
               </p>
 
-              {/* Details */}
-              <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-8 text-sm">
-                <div className="bg-sand-light rounded-lg p-3 sm:p-4">
-                  <span className="text-muted-foreground text-xs sm:text-sm">Matériau</span>
-                  <p className="font-semibold text-foreground text-sm sm:text-base">{product.material}</p>
+              {/* Variantes */}
+              {product.hasVariants && product.variants && (
+                <div className="space-y-6 mb-6 sm:mb-8 p-4 sm:p-6 bg-sand-light rounded-xl">
+                  {/* Type de chaîne */}
+                  <div>
+                    <h3 className="font-medium text-foreground mb-3 text-sm sm:text-base">Type de collier</h3>
+                    <RadioGroup 
+                      value={selectedType} 
+                      onValueChange={(value) => setSelectedType(value as "chaine" | "perle")}
+                      className="flex flex-wrap gap-3"
+                    >
+                      <div className="flex items-center">
+                        <RadioGroupItem value="chaine" id="chaine" className="peer sr-only" />
+                        <Label 
+                          htmlFor="chaine" 
+                          className={`px-4 py-2 sm:px-5 sm:py-2.5 rounded-full border-2 cursor-pointer transition-all text-sm sm:text-base ${
+                            selectedType === "chaine" 
+                              ? "border-gold bg-gold/10 text-gold-dark" 
+                              : "border-border hover:border-gold/50"
+                          }`}
+                        >
+                          Chaîne - 23€
+                        </Label>
+                      </div>
+                      <div className="flex items-center">
+                        <RadioGroupItem value="perle" id="perle" className="peer sr-only" />
+                        <Label 
+                          htmlFor="perle" 
+                          className={`px-4 py-2 sm:px-5 sm:py-2.5 rounded-full border-2 cursor-pointer transition-all text-sm sm:text-base ${
+                            selectedType === "perle" 
+                              ? "border-gold bg-gold/10 text-gold-dark" 
+                              : "border-border hover:border-gold/50"
+                          }`}
+                        >
+                          Perles - 25€
+                        </Label>
+                      </div>
+                    </RadioGroup>
+                  </div>
+
+                  {/* Couleur */}
+                  <div>
+                    <h3 className="font-medium text-foreground mb-3 text-sm sm:text-base">Couleur</h3>
+                    <RadioGroup 
+                      value={selectedColor} 
+                      onValueChange={(value) => setSelectedColor(value as "dore" | "argente")}
+                      className="flex flex-wrap gap-3"
+                    >
+                      <div className="flex items-center">
+                        <RadioGroupItem value="argente" id="argente" className="peer sr-only" />
+                        <Label 
+                          htmlFor="argente" 
+                          className={`flex items-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 rounded-full border-2 cursor-pointer transition-all text-sm sm:text-base ${
+                            selectedColor === "argente" 
+                              ? "border-gold bg-gold/10 text-gold-dark" 
+                              : "border-border hover:border-gold/50"
+                          }`}
+                        >
+                          <span className="w-4 h-4 rounded-full bg-gradient-to-br from-gray-300 to-gray-500 border border-gray-400" />
+                          Argenté
+                        </Label>
+                      </div>
+                      <div className="flex items-center">
+                        <RadioGroupItem value="dore" id="dore" className="peer sr-only" />
+                        <Label 
+                          htmlFor="dore" 
+                          className={`flex items-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 rounded-full border-2 cursor-pointer transition-all text-sm sm:text-base ${
+                            selectedColor === "dore" 
+                              ? "border-gold bg-gold/10 text-gold-dark" 
+                              : "border-border hover:border-gold/50"
+                          }`}
+                        >
+                          <span className="w-4 h-4 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 border border-yellow-500" />
+                          Doré
+                        </Label>
+                      </div>
+                    </RadioGroup>
+                  </div>
+
+                  {/* Résumé de la sélection */}
+                  {selectedVariant && (
+                    <div className="pt-4 border-t border-border">
+                      <p className="text-sm text-muted-foreground">
+                        Votre sélection : <span className="font-medium text-foreground">{selectedVariant.label}</span>
+                      </p>
+                    </div>
+                  )}
                 </div>
-                {product.weight && (
+              )}
+
+              {/* Details */}
+              {!product.hasVariants && (
+                <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-8 text-sm">
                   <div className="bg-sand-light rounded-lg p-3 sm:p-4">
-                    <span className="text-muted-foreground text-xs sm:text-sm">Poids</span>
-                    <p className="font-semibold text-foreground text-sm sm:text-base">{product.weight}</p>
+                    <span className="text-muted-foreground text-xs sm:text-sm">Matériau</span>
+                    <p className="font-semibold text-foreground text-sm sm:text-base">{product.material}</p>
                   </div>
-                )}
-                {product.dimensions && (
-                  <div className="bg-sand-light rounded-lg p-3 sm:p-4 col-span-2">
-                    <span className="text-muted-foreground text-xs sm:text-sm">Dimensions</span>
-                    <p className="font-semibold text-foreground text-sm sm:text-base">{product.dimensions}</p>
-                  </div>
-                )}
-              </div>
+                  {product.weight && (
+                    <div className="bg-sand-light rounded-lg p-3 sm:p-4">
+                      <span className="text-muted-foreground text-xs sm:text-sm">Poids</span>
+                      <p className="font-semibold text-foreground text-sm sm:text-base">{product.weight}</p>
+                    </div>
+                  )}
+                  {product.dimensions && (
+                    <div className="bg-sand-light rounded-lg p-3 sm:p-4 col-span-2">
+                      <span className="text-muted-foreground text-xs sm:text-sm">Dimensions</span>
+                      <p className="font-semibold text-foreground text-sm sm:text-base">{product.dimensions}</p>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Quantity */}
               <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
@@ -210,7 +326,7 @@ const Product = () => {
                   ) : (
                     <>
                       <ShoppingBag className="h-5 w-5 mr-2" />
-                      Ajouter au panier
+                      Ajouter au panier - {formatPrice(currentPrice * quantity)}
                     </>
                   )}
                 </Button>
@@ -267,7 +383,9 @@ const Product = () => {
                         <h3 className="font-display text-sm sm:text-base lg:text-lg font-semibold text-foreground mb-1 line-clamp-1">
                           {item.name}
                         </h3>
-                        <p className="text-gold-dark font-bold text-sm sm:text-base">{formatPrice(item.price)}</p>
+                        <p className="text-gold-dark font-bold text-sm sm:text-base">
+                          {item.hasVariants ? `Dès ${formatPrice(item.price)}` : formatPrice(item.price)}
+                        </p>
                       </div>
                     </Link>
                   </motion.div>
