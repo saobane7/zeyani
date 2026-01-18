@@ -18,10 +18,30 @@ serve(async (req) => {
       throw new Error("Order ID manquant");
     }
 
-    // Create Supabase client
+    // Create Supabase client with service role for DB operations
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabaseAnon = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Try to get the authenticated user from the request
+    let userId: string | null = null;
+    const authHeader = req.headers.get("Authorization");
+    
+    if (authHeader?.startsWith("Bearer ")) {
+      // Create a client with the user's token to verify auth
+      const userClient = createClient(supabaseUrl, supabaseAnon, {
+        global: { headers: { Authorization: authHeader } }
+      });
+      
+      const token = authHeader.replace("Bearer ", "");
+      const { data: claimsData, error: claimsError } = await userClient.auth.getClaims(token);
+      
+      if (!claimsError && claimsData?.claims?.sub) {
+        userId = claimsData.claims.sub as string;
+        console.log("Authenticated user:", userId);
+      }
+    }
 
     // Store order in database (GDPR compliant - minimal data)
     const { data: order, error: orderError } = await supabase
@@ -32,6 +52,7 @@ serve(async (req) => {
         total_amount: totalAmount,
         currency: "EUR",
         items: items,
+        user_id: userId,
         // Store only essential shipping info
         shipping_address: shippingAddress ? {
           city: shippingAddress.city,
@@ -51,7 +72,7 @@ serve(async (req) => {
       // Just log it for manual review
     }
 
-    console.log("Order captured successfully:", orderId);
+    console.log("Order captured successfully:", orderId, "User:", userId || "guest");
 
     return new Response(
       JSON.stringify({
