@@ -75,9 +75,9 @@ const PayPalButton = ({ onSuccess, onError, disabled = false }: PayPalButtonProp
         label: "paypal",
         height: 45,
       },
-      createOrder: async () => {
+      createOrder: async (_data: any, actions: any) => {
         try {
-          // Validate order on backend
+          // Validate order on backend first
           const { data, error } = await supabase.functions.invoke("create-paypal-order", {
             body: {
               items: items.map((item) => ({
@@ -95,12 +95,8 @@ const PayPalButton = ({ onSuccess, onError, disabled = false }: PayPalButtonProp
             throw new Error(data?.error || "Erreur de validation");
           }
 
-          // Create order via PayPal SDK
-          return window.paypal.Buttons.driver("checkout", {
-            createOrder: () => {
-              return data.orderData;
-            },
-          });
+          // Create order via PayPal SDK actions
+          return actions.order.create(data.orderData);
         } catch (err: any) {
           console.error("Create order error:", err);
           toast.error("Erreur lors de la création de la commande");
