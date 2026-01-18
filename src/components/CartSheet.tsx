@@ -1,15 +1,22 @@
+import { useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { ShoppingBag, X, Plus, Minus, Trash2 } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { formatPrice } from "@/data/products";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const CartSheet = () => {
   const { items, totalItems, totalPrice, updateQuantity, removeFromCart } = useCart();
+  const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
 
+  const handleCheckout = () => {
+    setOpen(false);
+    navigate("/checkout");
+  };
   return (
-    <Sheet>
+    <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
         <Button variant="ghost" size="icon" className="relative">
           <ShoppingBag className="h-5 w-5" />
@@ -97,7 +104,7 @@ const CartSheet = () => {
                 <span>Total</span>
                 <span className="text-gold-dark">{formatPrice(totalPrice)}</span>
               </div>
-              <Button variant="gold" className="w-full" size="lg">
+              <Button variant="gold" className="w-full" size="lg" onClick={handleCheckout}>
                 Procéder au paiement
               </Button>
               <Link to="/collection" className="block">
