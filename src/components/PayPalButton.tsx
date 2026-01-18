@@ -3,6 +3,7 @@ import { useCart } from "@/contexts/CartContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { ShippingInfo } from "@/pages/Checkout";
 
 declare global {
   interface Window {
@@ -14,10 +15,12 @@ interface PayPalButtonProps {
   onSuccess: (orderId: string) => void;
   onError: (error: string) => void;
   disabled?: boolean;
+  shippingOption: ShippingInfo;
 }
 
-const PayPalButton = ({ onSuccess, onError, disabled = false }: PayPalButtonProps) => {
+const PayPalButton = ({ onSuccess, onError, disabled = false, shippingOption }: PayPalButtonProps) => {
   const { items, totalPrice, clearCart } = useCart();
+  const finalTotal = totalPrice + shippingOption.price;
   const paypalRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [scriptLoaded, setScriptLoaded] = useState(false);
@@ -77,17 +80,29 @@ const PayPalButton = ({ onSuccess, onError, disabled = false }: PayPalButtonProp
       },
       createOrder: async (_data: any, actions: any) => {
         try {
+          // Build items including shipping
+          const orderItems = [
+            ...items.map((item) => ({
+              name: item.product.name,
+              quantity: item.quantity,
+              unit_amount: {
+                value: item.product.price.toString(),
+              },
+            })),
+            {
+              name: `Livraison - ${shippingOption.label}`,
+              quantity: 1,
+              unit_amount: {
+                value: shippingOption.price.toString(),
+              },
+            },
+          ];
+
           // Validate order on backend first
           const { data, error } = await supabase.functions.invoke("create-paypal-order", {
             body: {
-              items: items.map((item) => ({
-                name: item.product.name,
-                quantity: item.quantity,
-                unit_amount: {
-                  value: item.product.price.toString(),
-                },
-              })),
-              totalAmount: totalPrice,
+              items: orderItems,
+              totalAmount: finalTotal,
             },
           });
 
@@ -108,7 +123,7 @@ const PayPalButton = ({ onSuccess, onError, disabled = false }: PayPalButtonProp
           // Capture the order
           const orderDetails = await actions.order.capture();
           
-          // Store in backend
+          // Store in backend with shipping info
           const { error } = await supabase.functions.invoke("capture-paypal-order", {
             body: {
               orderId: orderDetails.id,
@@ -119,7 +134,12 @@ const PayPalButton = ({ onSuccess, onError, disabled = false }: PayPalButtonProp
                 quantity: item.quantity,
                 price: item.product.price,
               })),
-              totalAmount: totalPrice,
+              shipping: {
+                type: shippingOption.type,
+                label: shippingOption.label,
+                price: shippingOption.price,
+              },
+              totalAmount: finalTotal,
               shippingAddress: orderDetails.purchase_units?.[0]?.shipping?.address,
             },
           });
@@ -145,7 +165,7 @@ const PayPalButton = ({ onSuccess, onError, disabled = false }: PayPalButtonProp
         toast.info("Paiement annulé");
       },
     }).render(paypalRef.current);
-  }, [scriptLoaded, items, totalPrice, disabled, clearCart, onSuccess, onError]);
+  }, [scriptLoaded, items, finalTotal, disabled, clearCart, onSuccess, onError, shippingOption]);
 
   if (isLoading) {
     return (

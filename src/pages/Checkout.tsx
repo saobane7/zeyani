@@ -6,7 +6,23 @@ import Footer from "@/components/Footer";
 import PayPalButton from "@/components/PayPalButton";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, CheckCircle2, ShieldCheck, Lock, Package } from "lucide-react";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+import { ArrowLeft, CheckCircle2, ShieldCheck, Lock, Package, Truck, MapPin, Building2 } from "lucide-react";
+
+export type ShippingOption = "locker" | "relay" | "home";
+
+export interface ShippingInfo {
+  type: ShippingOption;
+  label: string;
+  price: number;
+}
+
+export const SHIPPING_OPTIONS: Record<ShippingOption, ShippingInfo> = {
+  locker: { type: "locker", label: "Locker Mondial Relay", price: 3.99 },
+  relay: { type: "relay", label: "Point Relais Mondial Relay", price: 4.99 },
+  home: { type: "home", label: "Livraison à domicile", price: 5.99 },
+};
 
 const Checkout = () => {
   const navigate = useNavigate();
@@ -14,6 +30,10 @@ const Checkout = () => {
   const [orderSuccess, setOrderSuccess] = useState(false);
   const [orderId, setOrderId] = useState<string | null>(null);
   const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [selectedShipping, setSelectedShipping] = useState<ShippingOption>("relay");
+
+  const shippingPrice = SHIPPING_OPTIONS[selectedShipping].price;
+  const finalTotal = totalPrice + shippingPrice;
 
   const handleSuccess = (id: string) => {
     setOrderId(id);
@@ -119,19 +139,80 @@ const Checkout = () => {
 
             <Separator className="my-6" />
 
+            {/* Shipping Options */}
+            <div className="mb-6">
+              <h2 className="text-lg font-medium mb-4 flex items-center gap-2">
+                <Truck className="h-5 w-5" />
+                Mode de livraison
+              </h2>
+              <p className="text-sm text-muted-foreground mb-4">
+                Livraison via Mondial Relay
+              </p>
+              
+              <RadioGroup
+                value={selectedShipping}
+                onValueChange={(value) => setSelectedShipping(value as ShippingOption)}
+                className="space-y-3"
+              >
+                <div className="flex items-center space-x-3 border rounded-lg p-4 cursor-pointer hover:bg-muted/50 transition-colors">
+                  <RadioGroupItem value="locker" id="locker" />
+                  <Label htmlFor="locker" className="flex-1 cursor-pointer flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Building2 className="h-5 w-5 text-muted-foreground" />
+                      <div>
+                        <p className="font-medium">Locker Mondial Relay</p>
+                        <p className="text-sm text-muted-foreground">Retrait 24h/24 en consigne automatique</p>
+                      </div>
+                    </div>
+                    <span className="font-semibold">3,99 €</span>
+                  </Label>
+                </div>
+
+                <div className="flex items-center space-x-3 border rounded-lg p-4 cursor-pointer hover:bg-muted/50 transition-colors">
+                  <RadioGroupItem value="relay" id="relay" />
+                  <Label htmlFor="relay" className="flex-1 cursor-pointer flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <MapPin className="h-5 w-5 text-muted-foreground" />
+                      <div>
+                        <p className="font-medium">Point Relais Mondial Relay</p>
+                        <p className="text-sm text-muted-foreground">Retrait chez un commerçant partenaire</p>
+                      </div>
+                    </div>
+                    <span className="font-semibold">4,99 €</span>
+                  </Label>
+                </div>
+
+                <div className="flex items-center space-x-3 border rounded-lg p-4 cursor-pointer hover:bg-muted/50 transition-colors">
+                  <RadioGroupItem value="home" id="home" />
+                  <Label htmlFor="home" className="flex-1 cursor-pointer flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Truck className="h-5 w-5 text-muted-foreground" />
+                      <div>
+                        <p className="font-medium">Livraison à domicile</p>
+                        <p className="text-sm text-muted-foreground">Réception directement chez vous</p>
+                      </div>
+                    </div>
+                    <span className="font-semibold">5,99 €</span>
+                  </Label>
+                </div>
+              </RadioGroup>
+            </div>
+
+            <Separator className="my-6" />
+
             <div className="space-y-2">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Sous-total</span>
                 <span>{totalPrice.toFixed(2)} €</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Livraison</span>
-                <span className="text-green-600">Gratuite</span>
+                <span className="text-muted-foreground">Livraison ({SHIPPING_OPTIONS[selectedShipping].label})</span>
+                <span>{shippingPrice.toFixed(2)} €</span>
               </div>
               <Separator className="my-4" />
               <div className="flex justify-between text-lg font-semibold">
                 <span>Total</span>
-                <span>{totalPrice.toFixed(2)} €</span>
+                <span>{finalTotal.toFixed(2)} €</span>
               </div>
             </div>
           </div>
@@ -163,6 +244,7 @@ const Checkout = () => {
                 onSuccess={handleSuccess}
                 onError={handleError}
                 disabled={items.length === 0}
+                shippingOption={SHIPPING_OPTIONS[selectedShipping]}
               />
 
               <p className="text-xs text-muted-foreground mt-6 text-center">
