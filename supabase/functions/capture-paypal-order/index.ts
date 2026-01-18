@@ -1,0 +1,81 @@
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
+serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const { orderId, payerDetails, items, totalAmount, shippingAddress } = await req.json();
+
+    if (!orderId) {
+      throw new Error("Order ID manquant");
+    }
+
+    // Create Supabase client
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Store order in database (GDPR compliant - minimal data)
+    const { data: order, error: orderError } = await supabase
+      .from("orders")
+      .insert({
+        paypal_order_id: orderId,
+        status: "completed",
+        total_amount: totalAmount,
+        currency: "EUR",
+        items: items,
+        // Store only essential shipping info
+        shipping_address: shippingAddress ? {
+          city: shippingAddress.city,
+          country_code: shippingAddress.country_code,
+          postal_code: shippingAddress.postal_code,
+        } : null,
+        // Store minimal payer info (GDPR)
+        payer_email: payerDetails?.email_address || null,
+        created_at: new Date().toISOString(),
+      })
+      .select()
+      .single();
+
+    if (orderError) {
+      console.error("Database error:", orderError);
+      // Don't fail the payment if DB storage fails
+      // Just log it for manual review
+    }
+
+    console.log("Order captured successfully:", orderId);
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        orderId,
+        message: "Commande confirmée avec succès",
+      }),
+      {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      }
+    );
+  } catch (error: unknown) {
+    console.error("Capture error:", error);
+    const message = error instanceof Error ? error.message : "Erreur lors de la capture";
+    return new Response(
+      JSON.stringify({ 
+        success: false, 
+        error: message 
+      }),
+      {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400,
+      }
+    );
+  }
+});
