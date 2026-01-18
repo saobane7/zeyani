@@ -1,14 +1,24 @@
 import { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Search, ChevronDown } from "lucide-react";
+import { Menu, X, Search, User, LogOut, Package } from "lucide-react";
 import { Button } from "./ui/button";
 import CartSheet from "./CartSheet";
+import { useAuth } from "@/hooks/useAuth";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, signOut } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -46,6 +56,11 @@ const Header = () => {
         }, 100);
       }
     }
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/");
   };
 
   return (
@@ -108,6 +123,46 @@ const Header = () => {
             >
               <Search className="h-5 w-5" />
             </Button>
+
+            {/* User account dropdown */}
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="icon"
+                    className={`transition-colors ${
+                      isScrolled ? "" : "text-cream hover:bg-cream/10"
+                    }`}
+                  >
+                    <User className="h-5 w-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem onClick={() => navigate("/mes-commandes")}>
+                    <Package className="h-4 w-4 mr-2" />
+                    Mes commandes
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut}>
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Déconnexion
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button 
+                variant="ghost" 
+                size="icon"
+                onClick={() => navigate("/auth")}
+                className={`transition-colors ${
+                  isScrolled ? "" : "text-cream hover:bg-cream/10"
+                }`}
+              >
+                <User className="h-5 w-5" />
+              </Button>
+            )}
+
             <CartSheet />
             
             {/* Mobile menu button */}
@@ -179,17 +234,45 @@ const Header = () => {
                 </motion.div>
               ))}
               
-              {/* Mobile search */}
+              {/* Mobile account/auth */}
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.3, delay: navLinks.length * 0.05 }}
-                className="mt-4 pt-4 border-t border-border"
+                className="mt-4 pt-4 border-t border-border space-y-2"
               >
-                <Button variant="outline" className="w-full justify-start gap-2">
-                  <Search className="h-4 w-4" />
-                  Rechercher...
-                </Button>
+                {user ? (
+                  <>
+                    <Link
+                      to="/mes-commandes"
+                      onClick={() => setIsMenuOpen(false)}
+                      className="flex items-center gap-2 text-base font-medium py-3 px-4 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted"
+                    >
+                      <Package className="h-4 w-4" />
+                      Mes commandes
+                    </Link>
+                    <Button 
+                      variant="outline" 
+                      className="w-full justify-start gap-2"
+                      onClick={() => {
+                        handleSignOut();
+                        setIsMenuOpen(false);
+                      }}
+                    >
+                      <LogOut className="h-4 w-4" />
+                      Déconnexion
+                    </Button>
+                  </>
+                ) : (
+                  <Link
+                    to="/auth"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center gap-2 text-base font-medium py-3 px-4 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted"
+                  >
+                    <User className="h-4 w-4" />
+                    Connexion / Inscription
+                  </Link>
+                )}
               </motion.div>
             </nav>
           </motion.div>

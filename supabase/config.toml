@@ -1,1 +1,13 @@
 project_id = "ajyerosmuaufhpalqfyc"
+
+[functions.create-paypal-order]
+verify_jwt = false
+
+[functions.capture-paypal-order]
+verify_jwt = false
+
+[functions.get-paypal-client-id]
+verify_jwt = false
+
+[functions.cleanup-expired-orders]
+verify_jwt = false

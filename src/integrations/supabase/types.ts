@@ -18,38 +18,47 @@ export type Database = {
         Row: {
           created_at: string
           currency: string
+          expires_at: string | null
           id: string
           items: Json
           payer_email: string | null
           paypal_order_id: string
+          received_at: string | null
           shipping_address: Json | null
           status: string
           total_amount: number
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           created_at?: string
           currency?: string
+          expires_at?: string | null
           id?: string
           items: Json
           payer_email?: string | null
           paypal_order_id: string
+          received_at?: string | null
           shipping_address?: Json | null
           status?: string
           total_amount: number
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           created_at?: string
           currency?: string
+          expires_at?: string | null
           id?: string
           items?: Json
           payer_email?: string | null
           paypal_order_id?: string
+          received_at?: string | null
           shipping_address?: Json | null
           status?: string
           total_amount?: number
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -58,7 +67,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      cleanup_expired_orders: { Args: never; Returns: number }
     }
     Enums: {
       [_ in never]: never
