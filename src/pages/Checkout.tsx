@@ -8,9 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, CheckCircle2, ShieldCheck, Lock, Package, Truck, MapPin, Building2 } from "lucide-react";
+import { ArrowLeft, CheckCircle2, ShieldCheck, Lock, Package, Truck, MapPin, Building2, Gift } from "lucide-react";
 
-export type ShippingOption = "locker" | "relay" | "home";
+export type ShippingOption = "free" | "locker" | "relay" | "home";
 
 export interface ShippingInfo {
   type: ShippingOption;
@@ -19,6 +19,7 @@ export interface ShippingInfo {
 }
 
 export const SHIPPING_OPTIONS: Record<ShippingOption, ShippingInfo> = {
+  free: { type: "free", label: "Livraison gratuite", price: 0 },
   locker: { type: "locker", label: "Locker Mondial Relay", price: 3.99 },
   relay: { type: "relay", label: "Point Relais Mondial Relay", price: 4.99 },
   home: { type: "home", label: "Livraison à domicile", price: 5.99 },
@@ -30,7 +31,7 @@ const Checkout = () => {
   const [orderSuccess, setOrderSuccess] = useState(false);
   const [orderId, setOrderId] = useState<string | null>(null);
   const [paymentError, setPaymentError] = useState<string | null>(null);
-  const [selectedShipping, setSelectedShipping] = useState<ShippingOption>("relay");
+  const [selectedShipping, setSelectedShipping] = useState<ShippingOption>("free");
 
   const shippingPrice = SHIPPING_OPTIONS[selectedShipping].price;
   const finalTotal = totalPrice + shippingPrice;
@@ -154,6 +155,20 @@ const Checkout = () => {
                 onValueChange={(value) => setSelectedShipping(value as ShippingOption)}
                 className="space-y-3"
               >
+                <div className="flex items-center space-x-3 border-2 border-green-500 bg-green-50 dark:bg-green-950/30 rounded-lg p-4 cursor-pointer hover:bg-green-100 dark:hover:bg-green-950/50 transition-colors">
+                  <RadioGroupItem value="free" id="free" />
+                  <Label htmlFor="free" className="flex-1 cursor-pointer flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Gift className="h-5 w-5 text-green-600" />
+                      <div>
+                        <p className="font-medium text-green-700 dark:text-green-400">Livraison gratuite</p>
+                        <p className="text-sm text-green-600 dark:text-green-500">Délai standard de livraison</p>
+                      </div>
+                    </div>
+                    <span className="font-semibold text-green-700 dark:text-green-400">Gratuit</span>
+                  </Label>
+                </div>
+
                 <div className="flex items-center space-x-3 border rounded-lg p-4 cursor-pointer hover:bg-muted/50 transition-colors">
                   <RadioGroupItem value="locker" id="locker" />
                   <Label htmlFor="locker" className="flex-1 cursor-pointer flex items-center justify-between">
