@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { orderId, payerDetails, items, totalAmount, shippingAddress } = await req.json();
+    const { orderId, payerDetails, items, shipping, totalAmount, shippingAddress } = await req.json();
 
     if (!orderId) {
       throw new Error("Order ID manquant");
@@ -53,13 +53,20 @@ serve(async (req) => {
         currency: "EUR",
         items: items,
         user_id: userId,
-        // Store only essential shipping info
-        shipping_address: shippingAddress ? {
-          city: shippingAddress.city,
-          country_code: shippingAddress.country_code,
-          postal_code: shippingAddress.postal_code,
-        } : null,
-        // Store minimal payer info (GDPR)
+        // Store shipping method and address
+        shipping_address: {
+          method: shipping ? {
+            type: shipping.type,
+            label: shipping.label,
+            price: shipping.price,
+          } : null,
+          address: shippingAddress ? {
+            city: shippingAddress.city,
+            country_code: shippingAddress.country_code,
+            postal_code: shippingAddress.postal_code,
+          } : null,
+        },
+        // Store minimal payer info (RGPD)
         payer_email: payerDetails?.email_address || null,
         created_at: new Date().toISOString(),
       })
