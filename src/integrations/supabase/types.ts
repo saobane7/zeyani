@@ -62,15 +62,121 @@ export type Database = {
         }
         Relationships: []
       }
+      products: {
+        Row: {
+          category: string
+          colors: Json | null
+          compare_at_price: number | null
+          created_at: string
+          description: string | null
+          dimensions: Json | null
+          featured: boolean | null
+          id: string
+          images: Json | null
+          is_active: boolean | null
+          material: string | null
+          name: string
+          price: number
+          seo_description: string | null
+          seo_title: string | null
+          short_description: string | null
+          sizes: Json | null
+          slug: string
+          stock: number | null
+          tags: string[] | null
+          updated_at: string
+          variants: Json | null
+          weight: number | null
+        }
+        Insert: {
+          category?: string
+          colors?: Json | null
+          compare_at_price?: number | null
+          created_at?: string
+          description?: string | null
+          dimensions?: Json | null
+          featured?: boolean | null
+          id?: string
+          images?: Json | null
+          is_active?: boolean | null
+          material?: string | null
+          name: string
+          price?: number
+          seo_description?: string | null
+          seo_title?: string | null
+          short_description?: string | null
+          sizes?: Json | null
+          slug: string
+          stock?: number | null
+          tags?: string[] | null
+          updated_at?: string
+          variants?: Json | null
+          weight?: number | null
+        }
+        Update: {
+          category?: string
+          colors?: Json | null
+          compare_at_price?: number | null
+          created_at?: string
+          description?: string | null
+          dimensions?: Json | null
+          featured?: boolean | null
+          id?: string
+          images?: Json | null
+          is_active?: boolean | null
+          material?: string | null
+          name?: string
+          price?: number
+          seo_description?: string | null
+          seo_title?: string | null
+          short_description?: string | null
+          sizes?: Json | null
+          slug?: string
+          stock?: number | null
+          tags?: string[] | null
+          updated_at?: string
+          variants?: Json | null
+          weight?: number | null
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
       cleanup_expired_orders: { Args: never; Returns: number }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -197,6 +303,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user"],
+    },
   },
 } as const
