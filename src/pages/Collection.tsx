@@ -1,12 +1,19 @@
 import { useState, useEffect } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Heart, ShoppingBag, Eye, Filter, SlidersHorizontal } from "lucide-react";
+import { Heart, ShoppingBag, Eye, Filter, SlidersHorizontal, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { products, categories, formatPrice, getProductsByCategory } from "@/data/products";
+import { useProductsByCategory, formatPrice } from "@/hooks/useProducts";
 import { useCart } from "@/contexts/CartContext";
+
+const categories = [
+  { name: "Tous", slug: "tous" },
+  { name: "Colliers", slug: "colliers" },
+  { name: "Bracelets", slug: "bracelets" },
+  { name: "Bagues", slug: "bagues" },
+];
 
 const Collection = () => {
   const { addToCart } = useCart();
@@ -15,14 +22,14 @@ const Collection = () => {
   const [activeCategory, setActiveCategory] = useState(categoryFromUrl);
   const [showFilters, setShowFilters] = useState(false);
   
+  const { data: filteredProducts, isLoading } = useProductsByCategory(activeCategory);
+  
   useEffect(() => {
     const categoryParam = searchParams.get("category");
     if (categoryParam) {
       setActiveCategory(categoryParam);
     }
   }, [searchParams]);
-
-  const filteredProducts = getProductsByCategory(activeCategory);
 
   const handleCategoryChange = (slug: string) => {
     setActiveCategory(slug);
@@ -71,7 +78,7 @@ const Collection = () => {
             {/* Mobile Filter Toggle */}
             <div className="flex items-center justify-between mb-6 lg:hidden">
               <span className="text-sm text-muted-foreground">
-                {filteredProducts.length} produit{filteredProducts.length > 1 ? 's' : ''}
+                {filteredProducts?.length || 0} produit{(filteredProducts?.length || 0) > 1 ? 's' : ''}
               </span>
               <Button 
                 variant="outline" 
@@ -107,152 +114,160 @@ const Collection = () => {
               ))}
             </motion.div>
 
-            {/* Products Grid */}
-            <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 xl:gap-8">
-              {filteredProducts.map((product, index) => (
-                <motion.div
-                  key={product.id}
-                  className="group bg-card rounded-lg overflow-hidden shadow-soft hover:shadow-card transition-all duration-500"
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: index * 0.05 }}
-                >
-                  {/* Image Container */}
-                  <Link to={`/produit/${product.slug}`} className="block relative aspect-square overflow-hidden bg-secondary">
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
-                    />
-                    
-                    {/* Badges */}
-                    <div className="absolute top-2 sm:top-4 left-2 sm:left-4 flex flex-col gap-1 sm:gap-2">
-                      {product.isNew && (
-                        <span className="bg-gold text-primary-foreground px-2 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold tracking-wide">
-                          Nouveau
-                        </span>
-                      )}
-                      {product.hasVariants && (
-                        <span className="bg-primary text-primary-foreground px-2 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold tracking-wide">
-                          Options
-                        </span>
-                      )}
-                      {product.originalPrice && (
-                        <span className="bg-destructive text-destructive-foreground px-2 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold tracking-wide">
-                          -{Math.round((1 - product.price / product.originalPrice) * 100)}%
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Quick actions - Desktop only */}
-                    <div className="absolute top-4 right-4 flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hidden lg:flex">
-                      <Button variant="secondary" size="icon" className="rounded-full shadow-soft h-10 w-10">
-                        <Heart className="h-4 w-4" />
-                      </Button>
-                      <Link to={`/produit/${product.slug}`}>
-                        <Button variant="secondary" size="icon" className="rounded-full shadow-soft h-10 w-10">
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                      </Link>
-                    </div>
-
-                    {/* Add to cart overlay - Desktop */}
-                    <div className="absolute inset-x-4 bottom-4 opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-300 hidden lg:block">
-                      {product.hasVariants ? (
-                        <Link to={`/produit/${product.slug}`}>
-                          <Button variant="gold" className="w-full rounded-full">
-                            <Eye className="h-4 w-4 mr-2" />
-                            Voir les options
-                          </Button>
-                        </Link>
-                      ) : (
-                        <Button 
-                          variant="gold" 
-                          className="w-full rounded-full"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            addToCart(product);
-                          }}
-                        >
-                          <ShoppingBag className="h-4 w-4 mr-2" />
-                          Ajouter au panier
-                        </Button>
-                      )}
-                    </div>
-                  </Link>
-
-                  {/* Product Info */}
-                  <div className="p-3 sm:p-4 lg:p-5">
-                    <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-widest">
-                      {product.material}
-                    </span>
-                    <Link to={`/produit/${product.slug}`}>
-                      <h3 className="font-display text-sm sm:text-base lg:text-lg font-semibold text-foreground mt-1 sm:mt-2 mb-1 sm:mb-2 hover:text-gold-dark transition-colors line-clamp-1">
-                        {product.name}
-                      </h3>
-                    </Link>
-                    <p className="text-muted-foreground text-xs sm:text-sm mb-2 sm:mb-3 line-clamp-2 hidden sm:block">
-                      {product.description}
-                    </p>
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
-                        <span className="text-sm sm:text-base lg:text-lg font-bold text-gold-dark">
-                          {product.hasVariants ? (
-                            <>Dès {formatPrice(product.price)}</>
-                          ) : (
-                            formatPrice(product.price)
+            {isLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-gold-dark" />
+              </div>
+            ) : (
+              <>
+                {/* Products Grid */}
+                <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 xl:gap-8">
+                  {filteredProducts?.map((product, index) => (
+                    <motion.div
+                      key={product.id}
+                      className="group bg-card rounded-lg overflow-hidden shadow-soft hover:shadow-card transition-all duration-500"
+                      initial={{ opacity: 0, y: 30 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.4, delay: index * 0.05 }}
+                    >
+                      {/* Image Container */}
+                      <Link to={`/produit/${product.slug}`} className="block relative aspect-square overflow-hidden bg-secondary">
+                        <img
+                          src={product.image}
+                          alt={product.name}
+                          className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
+                        />
+                        
+                        {/* Badges */}
+                        <div className="absolute top-2 sm:top-4 left-2 sm:left-4 flex flex-col gap-1 sm:gap-2">
+                          {product.isNew && (
+                            <span className="bg-gold text-primary-foreground px-2 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold tracking-wide">
+                              Nouveau
+                            </span>
                           )}
-                        </span>
-                        {product.originalPrice && (
-                          <span className="text-[10px] sm:text-sm text-muted-foreground line-through">
-                            {formatPrice(product.originalPrice)}
-                          </span>
-                        )}
-                      </div>
-                      {/* Mobile add button */}
-                      {product.hasVariants ? (
-                        <Link to={`/produit/${product.slug}`}>
-                          <Button 
-                            variant="ghost" 
-                            size="icon"
-                            className="lg:hidden h-8 w-8 sm:h-10 sm:w-10 rounded-full hover:bg-gold/10"
-                          >
-                            <Eye className="h-4 w-4 sm:h-5 sm:w-5 text-gold-dark" />
-                          </Button>
-                        </Link>
-                      ) : (
-                        <Button 
-                          variant="ghost" 
-                          size="icon"
-                          className="lg:hidden h-8 w-8 sm:h-10 sm:w-10 rounded-full hover:bg-gold/10"
-                          onClick={() => addToCart(product)}
-                        >
-                          <ShoppingBag className="h-4 w-4 sm:h-5 sm:w-5 text-gold-dark" />
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
+                          {product.hasVariants && (
+                            <span className="bg-primary text-primary-foreground px-2 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold tracking-wide">
+                              Options
+                            </span>
+                          )}
+                          {product.originalPrice && (
+                            <span className="bg-destructive text-destructive-foreground px-2 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold tracking-wide">
+                              -{Math.round((1 - product.price / product.originalPrice) * 100)}%
+                            </span>
+                          )}
+                        </div>
 
-            {filteredProducts.length === 0 && (
-              <motion.div 
-                className="text-center py-12 lg:py-16"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-              >
-                <p className="text-muted-foreground text-base lg:text-lg">
-                  Aucun produit trouvé dans cette catégorie.
-                </p>
-                <Button 
-                  variant="outline" 
-                  className="mt-4"
-                  onClick={() => handleCategoryChange("tous")}
-                >
-                  Voir tous les produits
-                </Button>
-              </motion.div>
+                        {/* Quick actions - Desktop only */}
+                        <div className="absolute top-4 right-4 flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hidden lg:flex">
+                          <Button variant="secondary" size="icon" className="rounded-full shadow-soft h-10 w-10">
+                            <Heart className="h-4 w-4" />
+                          </Button>
+                          <Link to={`/produit/${product.slug}`}>
+                            <Button variant="secondary" size="icon" className="rounded-full shadow-soft h-10 w-10">
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                          </Link>
+                        </div>
+
+                        {/* Add to cart overlay - Desktop */}
+                        <div className="absolute inset-x-4 bottom-4 opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-300 hidden lg:block">
+                          {product.hasVariants ? (
+                            <Link to={`/produit/${product.slug}`}>
+                              <Button variant="gold" className="w-full rounded-full">
+                                <Eye className="h-4 w-4 mr-2" />
+                                Voir les options
+                              </Button>
+                            </Link>
+                          ) : (
+                            <Button 
+                              variant="gold" 
+                              className="w-full rounded-full"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                addToCart(product);
+                              }}
+                            >
+                              <ShoppingBag className="h-4 w-4 mr-2" />
+                              Ajouter au panier
+                            </Button>
+                          )}
+                        </div>
+                      </Link>
+
+                      {/* Product Info */}
+                      <div className="p-3 sm:p-4 lg:p-5">
+                        <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-widest">
+                          {product.material}
+                        </span>
+                        <Link to={`/produit/${product.slug}`}>
+                          <h3 className="font-display text-sm sm:text-base lg:text-lg font-semibold text-foreground mt-1 sm:mt-2 mb-1 sm:mb-2 hover:text-gold-dark transition-colors line-clamp-1">
+                            {product.name}
+                          </h3>
+                        </Link>
+                        <p className="text-muted-foreground text-xs sm:text-sm mb-2 sm:mb-3 line-clamp-2 hidden sm:block">
+                          {product.description}
+                        </p>
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                            <span className="text-sm sm:text-base lg:text-lg font-bold text-gold-dark">
+                              {product.hasVariants ? (
+                                <>Dès {formatPrice(product.price)}</>
+                              ) : (
+                                formatPrice(product.price)
+                              )}
+                            </span>
+                            {product.originalPrice && (
+                              <span className="text-[10px] sm:text-sm text-muted-foreground line-through">
+                                {formatPrice(product.originalPrice)}
+                              </span>
+                            )}
+                          </div>
+                          {/* Mobile add button */}
+                          {product.hasVariants ? (
+                            <Link to={`/produit/${product.slug}`}>
+                              <Button 
+                                variant="ghost" 
+                                size="icon"
+                                className="lg:hidden h-8 w-8 sm:h-10 sm:w-10 rounded-full hover:bg-gold/10"
+                              >
+                                <Eye className="h-4 w-4 sm:h-5 sm:w-5 text-gold-dark" />
+                              </Button>
+                            </Link>
+                          ) : (
+                            <Button 
+                              variant="ghost" 
+                              size="icon"
+                              className="lg:hidden h-8 w-8 sm:h-10 sm:w-10 rounded-full hover:bg-gold/10"
+                              onClick={() => addToCart(product)}
+                            >
+                              <ShoppingBag className="h-4 w-4 sm:h-5 sm:w-5 text-gold-dark" />
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+
+                {filteredProducts?.length === 0 && (
+                  <motion.div 
+                    className="text-center py-12 lg:py-16"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                  >
+                    <p className="text-muted-foreground text-base lg:text-lg">
+                      Aucun produit trouvé dans cette catégorie.
+                    </p>
+                    <Button 
+                      variant="outline" 
+                      className="mt-4"
+                      onClick={() => handleCategoryChange("tous")}
+                    >
+                      Voir tous les produits
+                    </Button>
+                  </motion.div>
+                )}
+              </>
             )}
           </div>
         </section>
