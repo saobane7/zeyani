@@ -1,27 +1,41 @@
 import { useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Heart, ShoppingBag, Truck, Shield, RotateCcw, Minus, Plus, ChevronLeft, Check, Star } from "lucide-react";
+import { Heart, ShoppingBag, Truck, Shield, RotateCcw, Minus, Plus, ChevronLeft, Check, Star, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { getProductBySlug, products, formatPrice, ProductVariant } from "@/data/products";
+import { useProduct, useProductsByCategory, formatPrice } from "@/hooks/useProducts";
 import { useCart } from "@/contexts/CartContext";
 
 const Product = () => {
   const { addToCart } = useCart();
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
-  const product = getProductBySlug(slug || "");
+  const { data: product, isLoading } = useProduct(slug || "");
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
   const [isAdded, setIsAdded] = useState(false);
   
   // Variantes
-  const [selectedType, setSelectedType] = useState<"chaine" | "perle">("chaine");
+  const [selectedType, setSelectedType] = useState<"chain" | "bead">("chain");
   const [selectedColor, setSelectedColor] = useState<"dore" | "argente">("argente");
+
+  const { data: relatedProducts } = useProductsByCategory(product?.category?.toLowerCase() || "tous");
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <main className="pt-32 pb-20 flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-gold-dark" />
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   if (!product) {
     return (
@@ -45,14 +59,10 @@ const Product = () => {
 
   // Trouver la variante sélectionnée
   const selectedVariant = product.hasVariants && product.variants
-    ? product.variants.find(v => v.type === selectedType && v.color === selectedColor)
+    ? product.variants.find((v: any) => v.type === selectedType && v.color === selectedColor)
     : null;
 
   const currentPrice = selectedVariant ? selectedVariant.price : product.price;
-  
-  // Image dynamique selon la variante sélectionnée
-  const variantKey = `${selectedType}-${selectedColor}`;
-  const currentImage = product.variantImages?.[variantKey] || product.images[selectedImage];
 
   const handleAddToCart = () => {
     const productToAdd = {
@@ -67,9 +77,9 @@ const Product = () => {
     setTimeout(() => setIsAdded(false), 2000);
   };
 
-  const relatedProducts = products
-    .filter((p) => p.category === product.category && p.id !== product.id)
-    .slice(0, 3);
+  const filteredRelatedProducts = relatedProducts
+    ?.filter((p) => p.id !== product.id)
+    .slice(0, 3) || [];
 
   return (
     <div className="min-h-screen bg-background">
@@ -111,8 +121,8 @@ const Product = () => {
             >
               <div className="aspect-square bg-secondary rounded-lg overflow-hidden">
                 <motion.img
-                  key={product.hasVariants ? variantKey : selectedImage}
-                  src={product.hasVariants && product.variantImages ? currentImage : product.images[selectedImage]}
+                  key={selectedImage}
+                  src={product.images[selectedImage]}
                   alt={product.name}
                   className="w-full h-full object-cover"
                   initial={{ opacity: 0, scale: 1.05 }}
@@ -178,22 +188,22 @@ const Product = () => {
               </p>
 
               {/* Variantes */}
-              {product.hasVariants && product.variants && (
+              {product.hasVariants && product.variants && product.variants.length > 0 && (
                 <div className="space-y-6 mb-6 sm:mb-8 p-4 sm:p-6 bg-sand-light rounded-xl">
                   {/* Type de chaîne */}
                   <div>
                     <h3 className="font-medium text-foreground mb-3 text-sm sm:text-base">Type de collier</h3>
                     <RadioGroup 
                       value={selectedType} 
-                      onValueChange={(value) => setSelectedType(value as "chaine" | "perle")}
+                      onValueChange={(value) => setSelectedType(value as "chain" | "bead")}
                       className="flex flex-wrap gap-3"
                     >
                       <div className="flex items-center">
-                        <RadioGroupItem value="chaine" id="chaine" className="peer sr-only" />
+                        <RadioGroupItem value="chain" id="chain" className="peer sr-only" />
                         <Label 
-                          htmlFor="chaine" 
+                          htmlFor="chain" 
                           className={`px-4 py-2 sm:px-5 sm:py-2.5 rounded-full border-2 cursor-pointer transition-all text-sm sm:text-base ${
-                            selectedType === "chaine" 
+                            selectedType === "chain" 
                               ? "border-gold bg-gold/10 text-gold-dark" 
                               : "border-border hover:border-gold/50"
                           }`}
@@ -202,11 +212,11 @@ const Product = () => {
                         </Label>
                       </div>
                       <div className="flex items-center">
-                        <RadioGroupItem value="perle" id="perle" className="peer sr-only" />
+                        <RadioGroupItem value="bead" id="bead" className="peer sr-only" />
                         <Label 
-                          htmlFor="perle" 
+                          htmlFor="bead" 
                           className={`px-4 py-2 sm:px-5 sm:py-2.5 rounded-full border-2 cursor-pointer transition-all text-sm sm:text-base ${
-                            selectedType === "perle" 
+                            selectedType === "bead" 
                               ? "border-gold bg-gold/10 text-gold-dark" 
                               : "border-border hover:border-gold/50"
                           }`}
@@ -358,13 +368,13 @@ const Product = () => {
           </div>
 
           {/* Related Products */}
-          {relatedProducts.length > 0 && (
+          {filteredRelatedProducts.length > 0 && (
             <section className="mt-12 lg:mt-20">
               <h2 className="font-display text-xl sm:text-2xl lg:text-3xl font-semibold text-foreground mb-6 lg:mb-8">
                 Vous aimerez aussi
               </h2>
               <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
-                {relatedProducts.map((item, index) => (
+                {filteredRelatedProducts.map((item, index) => (
                   <motion.div
                     key={item.id}
                     initial={{ opacity: 0, y: 20 }}
@@ -387,8 +397,8 @@ const Product = () => {
                         <h3 className="font-display text-sm sm:text-base lg:text-lg font-semibold text-foreground mb-1 line-clamp-1">
                           {item.name}
                         </h3>
-                        <p className="text-gold-dark font-bold text-sm sm:text-base">
-                          {item.hasVariants ? `Dès ${formatPrice(item.price)}` : formatPrice(item.price)}
+                        <p className="text-sm sm:text-base font-bold text-gold-dark">
+                          {formatPrice(item.price)}
                         </p>
                       </div>
                     </Link>

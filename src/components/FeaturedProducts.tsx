@@ -1,13 +1,23 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Heart, ShoppingBag, Eye, ArrowRight } from "lucide-react";
+import { Heart, ShoppingBag, Eye, ArrowRight, Loader2 } from "lucide-react";
 import { Button } from "./ui/button";
-import { products, formatPrice } from "@/data/products";
+import { useFeaturedProducts, formatPrice } from "@/hooks/useProducts";
 import { useCart } from "@/contexts/CartContext";
 
 const FeaturedProducts = () => {
   const { addToCart } = useCart();
-  const featuredProducts = products.slice(0, 3);
+  const { data: featuredProducts, isLoading } = useFeaturedProducts();
+
+  if (isLoading) {
+    return (
+      <section id="collection" className="py-16 lg:py-24 xl:py-32 bg-sand-light">
+        <div className="container mx-auto px-4 lg:px-8 flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-gold-dark" />
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section id="collection" className="py-16 lg:py-24 xl:py-32 bg-sand-light">
@@ -35,7 +45,7 @@ const FeaturedProducts = () => {
 
         {/* Products Grid */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 xl:gap-12">
-          {featuredProducts.map((product, index) => (
+          {featuredProducts?.slice(0, 3).map((product, index) => (
             <motion.div
               key={product.id}
               className="group bg-card rounded-lg overflow-hidden shadow-soft hover:shadow-card transition-all duration-500"
