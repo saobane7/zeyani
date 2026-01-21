@@ -1,6 +1,7 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { useCart } from "@/contexts/CartContext";
+import { useAuth } from "@/hooks/useAuth";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import PayPalButton from "@/components/PayPalButton";
@@ -8,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, CheckCircle2, ShieldCheck, Lock, Package, Truck, MapPin, Building2, Gift } from "lucide-react";
+import { ArrowLeft, CheckCircle2, ShieldCheck, Lock, Package, Truck, MapPin, Building2, Gift, LogIn, Loader2 } from "lucide-react";
 
 export type ShippingOption = "free" | "locker" | "relay" | "home";
 
@@ -28,6 +29,7 @@ export const SHIPPING_OPTIONS: Record<ShippingOption, ShippingInfo> = {
 const Checkout = () => {
   const navigate = useNavigate();
   const { items, totalPrice } = useCart();
+  const { user, loading: authLoading } = useAuth();
   const [orderSuccess, setOrderSuccess] = useState(false);
   const [orderId, setOrderId] = useState<string | null>(null);
   const [paymentError, setPaymentError] = useState<string | null>(null);
@@ -45,6 +47,48 @@ const Checkout = () => {
   const handleError = (error: string) => {
     setPaymentError(error);
   };
+
+  // Afficher un loader pendant le chargement de l'auth
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <main className="container mx-auto px-4 py-16 flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  // Rediriger vers la page de connexion si non authentifié
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <main className="container mx-auto px-4 py-16">
+          <div className="max-w-lg mx-auto text-center">
+            <LogIn className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+            <h1 className="text-2xl font-serif mb-4">Connexion requise</h1>
+            <p className="text-muted-foreground mb-6">
+              Veuillez vous connecter ou créer un compte pour finaliser votre commande.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button asChild>
+                <Link to="/auth?redirect=/checkout">
+                  Se connecter
+                </Link>
+              </Button>
+              <Button variant="outline" onClick={() => navigate("/collection")}>
+                Continuer mes achats
+              </Button>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   if (items.length === 0 && !orderSuccess) {
     return (
