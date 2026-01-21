@@ -5,6 +5,19 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+interface OrderItem {
+  name: string;
+  quantity: number;
+  unit_amount: {
+    value: string;
+  };
+}
+
+interface RequestBody {
+  items: OrderItem[];
+  totalAmount: number;
+}
+
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
@@ -12,62 +25,147 @@ serve(async (req) => {
   }
 
   try {
-    // Safely parse request body
-    let body;
+    // Parse request body safely
+    let body: RequestBody;
+    
     try {
       const text = await req.text();
+      console.log("Received request body:", text);
+      
       if (!text || text.trim() === "") {
-        throw new Error("Request body is empty");
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            error: "Corps de requête vide" 
+          }),
+          {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 400,
+          }
+        );
       }
+      
       body = JSON.parse(text);
     } catch (parseError) {
       console.error("JSON parse error:", parseError);
-      throw new Error("Invalid request body - JSON parsing failed");
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: "Format de données invalide" 
+        }),
+        {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400,
+        }
+      );
     }
 
     const { items, totalAmount } = body;
 
+    // Validate items
     if (!items || !Array.isArray(items) || items.length === 0) {
-      throw new Error("Items invalides");
+      console.error("Invalid items:", items);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: "Panier invalide ou vide" 
+        }),
+        {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400,
+        }
+      );
     }
 
-    if (!totalAmount || totalAmount <= 0) {
-      throw new Error("Montant invalide");
+    // Validate total amount
+    if (!totalAmount || typeof totalAmount !== "number" || totalAmount <= 0) {
+      console.error("Invalid total amount:", totalAmount);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: "Montant total invalide" 
+        }),
+        {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400,
+        }
+      );
     }
 
-    // Validate items structure
+    // Validate each item structure
     for (const item of items) {
       if (!item.name || !item.quantity || !item.unit_amount?.value) {
-        throw new Error("Structure d'article invalide");
+        console.error("Invalid item structure:", item);
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            error: "Structure d'article invalide" 
+          }),
+          {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 400,
+          }
+        );
       }
     }
 
-    // Return order data for PayPal Buttons (client-side creation)
+    // Calculate expected total from items
+    const calculatedTotal = items.reduce((sum, item) => {
+      return sum + (parseFloat(item.unit_amount.value) * item.quantity);
+    }, 0);
+
+    // Allow small rounding differences
+    if (Math.abs(calculatedTotal - totalAmount) > 0.02) {
+      console.error("Total mismatch:", { calculatedTotal, totalAmount });
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: "Le montant total ne correspond pas aux articles" 
+        }),
+        {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400,
+        }
+      );
+    }
+
+    console.log("Order validated successfully:", { items: items.length, totalAmount });
+
+    // Build PayPal order data
+    const orderData = {
+      intent: "CAPTURE",
+      purchase_units: [{
+        amount: {
+          currency_code: "EUR",
+          value: totalAmount.toFixed(2),
+          breakdown: {
+            item_total: {
+              currency_code: "EUR",
+              value: totalAmount.toFixed(2),
+            },
+          },
+        },
+        items: items.map((item) => ({
+          name: item.name.substring(0, 127),
+          quantity: String(item.quantity),
+          unit_amount: {
+            currency_code: "EUR",
+            value: parseFloat(item.unit_amount.value).toFixed(2),
+          },
+        })),
+      }],
+      application_context: {
+        shipping_preference: "GET_FROM_FILE",
+        user_action: "PAY_NOW",
+        brand_name: "Niger Chic Designs",
+        locale: "fr-FR",
+      },
+    };
+
     return new Response(
       JSON.stringify({
         success: true,
-        orderData: {
-          purchase_units: [{
-            amount: {
-              currency_code: "EUR",
-              value: totalAmount.toFixed(2),
-              breakdown: {
-                item_total: {
-                  currency_code: "EUR",
-                  value: totalAmount.toFixed(2),
-                },
-              },
-            },
-            items: items.map((item: any) => ({
-              name: item.name.substring(0, 127),
-              quantity: String(item.quantity),
-              unit_amount: {
-                currency_code: "EUR",
-                value: parseFloat(item.unit_amount.value).toFixed(2),
-              },
-            })),
-          }],
-        },
+        orderData,
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -75,8 +173,8 @@ serve(async (req) => {
       }
     );
   } catch (error: unknown) {
-    console.error("PayPal order error:", error);
-    const message = error instanceof Error ? error.message : "Erreur lors de la création de la commande";
+    console.error("Unexpected error:", error);
+    const message = error instanceof Error ? error.message : "Erreur inattendue";
     return new Response(
       JSON.stringify({ 
         success: false, 
@@ -84,7 +182,7 @@ serve(async (req) => {
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 400,
+        status: 500,
       }
     );
   }
