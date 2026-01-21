@@ -103,7 +103,7 @@ export const useProducts = () => {
         .from('products')
         .select('*')
         .eq('is_active', true)
-        .order('created_at', { ascending: false });
+        .order('display_order', { ascending: true });
 
       if (error) throw error;
       return (data as unknown as DbProduct[]).map(transformProduct);
@@ -137,7 +137,7 @@ export const useProductsByCategory = (category: string) => {
         .from('products')
         .select('*')
         .eq('is_active', true)
-        .order('created_at', { ascending: false });
+        .order('display_order', { ascending: true });
 
       if (category !== 'tous') {
         query = query.eq('category', category.toLowerCase());
@@ -160,6 +160,7 @@ export const useFeaturedProducts = () => {
         .select('*')
         .eq('is_active', true)
         .eq('featured', true)
+        .order('display_order', { ascending: true })
         .limit(6);
 
       if (error) throw error;

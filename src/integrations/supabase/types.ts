@@ -70,6 +70,7 @@ export type Database = {
           created_at: string
           description: string | null
           dimensions: Json | null
+          display_order: number | null
           featured: boolean | null
           id: string
           images: Json | null
@@ -95,6 +96,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           dimensions?: Json | null
+          display_order?: number | null
           featured?: boolean | null
           id?: string
           images?: Json | null
@@ -120,6 +122,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           dimensions?: Json | null
+          display_order?: number | null
           featured?: boolean | null
           id?: string
           images?: Json | null

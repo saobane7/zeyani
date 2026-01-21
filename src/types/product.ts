@@ -49,6 +49,7 @@ export interface DbProduct {
   seo_description: string | null;
   weight: number | null;
   dimensions: ProductDimensions | null;
+  display_order: number | null;
   created_at: string;
   updated_at: string;
 }
