@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { Button } from "./ui/button";
-import artisanImg from "@/assets/artisan-tuareg.jpg";
+import hommeTouaregImg from "@/assets/homme-touareg.webp";
 
 const Heritage = () => {
   return (
@@ -24,29 +24,29 @@ const Heritage = () => {
             </span>
             
             <h2 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light mb-6 lg:mb-8 leading-tight">
-              La Croix d'Agadez
+              L'histoire des croix
               <br />
-              <span className="text-gradient-gold font-semibold">Un Symbole Éternel</span>
+              <span className="text-gradient-gold font-semibold">Touarègues</span>
             </h2>
             
             <div className="space-y-4 lg:space-y-6 text-primary-foreground/80 text-base lg:text-lg leading-relaxed">
               <p>
-                La Croix d'Agadez, symbole emblématique du peuple Touareg, 
-                représente bien plus qu'un simple bijou. Elle incarne les 
-                <strong className="text-gold"> quatre points cardinaux</strong>, 
-                guidant les nomades à travers l'immensité du désert du Sahara.
+                Au cœur du Sahara, là où le sable rencontre le ciel et où le silence a valeur de sagesse, 
+                vit depuis des siècles le peuple touareg. Nomades du désert, les Touaregs ont transmis 
+                leur histoire non par des livres, mais par des <strong className="text-gold">symboles, 
+                des gestes et des objets sacrés</strong>.
               </p>
               
               <p>
-                Traditionnellement offerte de père en fils, elle porte en elle 
-                une bénédiction ancestrale : <em className="text-cream italic">
-                "Je te donne les quatre directions du monde, 
-                car on ne sait pas où tu mourras."</em>
+                Traditionnellement, un père offrait une croix à son fils lorsqu'il atteignait l'âge adulte, 
+                en lui disant : <em className="text-cream italic">« Je te donne les quatre directions du monde, 
+                car nul ne sait où tu iras mourir. »</em>
               </p>
               
               <p className="hidden sm:block">
-                Chaque croix est unique, façonnée à la main par des maîtres 
-                artisans d'Agadez selon des techniques transmises depuis des siècles.
+                La croix représente les quatre points cardinaux. Elle rappelle au porteur qu'il doit 
+                être capable de s'orienter dans le désert, mais aussi dans la vie. C'est un symbole 
+                de <strong className="text-gold">liberté, de responsabilité, et de protection</strong>.
               </p>
             </div>
 
@@ -60,7 +60,7 @@ const Heritage = () => {
             {/* Stats */}
             <div className="grid grid-cols-3 gap-4 sm:gap-8 mt-10 lg:mt-12 pt-8 lg:pt-10 border-t border-primary-foreground/20">
               <div className="text-center sm:text-left">
-                <span className="block text-2xl sm:text-3xl md:text-4xl font-display font-bold text-gradient-gold">21</span>
+                <span className="block text-2xl sm:text-3xl md:text-4xl font-display font-bold text-gradient-gold">20+</span>
                 <span className="text-xs sm:text-sm text-primary-foreground/60 tracking-wide">Formes Différentes</span>
               </div>
               <div className="text-center sm:text-left">
@@ -84,8 +84,8 @@ const Heritage = () => {
           >
             <div className="relative rounded-lg overflow-hidden shadow-card">
               <img
-                src={artisanImg}
-                alt="Artisan Touareg façonnant une Croix d'Agadez"
+                src={hommeTouaregImg}
+                alt="Homme Touareg avec le voile traditionnel bleu indigo"
                 className="w-full h-auto object-cover aspect-[4/5] sm:aspect-[3/4]"
               />
               {/* Overlay gradient */}
