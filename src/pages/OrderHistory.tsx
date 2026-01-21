@@ -7,6 +7,7 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { OrderStatusTimeline, StatusBadge, getStatusConfig } from "@/components/OrderStatusTimeline";
 
 interface OrderItem {
   name: string;
@@ -44,6 +45,7 @@ const OrderHistory = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
+  const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -87,17 +89,6 @@ const OrderHistory = () => {
       fetchOrders();
     }
   }, [user]);
-
-  const getStatusLabel = (status: string) => {
-    const labels: Record<string, { text: string; color: string }> = {
-      pending: { text: "En attente", color: "bg-yellow-100 text-yellow-800" },
-      completed: { text: "Payée", color: "bg-green-100 text-green-800" },
-      shipped: { text: "Expédiée", color: "bg-blue-100 text-blue-800" },
-      delivered: { text: "Livrée", color: "bg-purple-100 text-purple-800" },
-      cancelled: { text: "Annulée", color: "bg-red-100 text-red-800" },
-    };
-    return labels[status] || { text: status, color: "bg-gray-100 text-gray-800" };
-  };
 
   const handleDownloadReceipt = (order: Order) => {
     const items = parseItems(order.items);
@@ -321,6 +312,10 @@ const OrderHistory = () => {
     };
   };
 
+  const toggleOrderExpand = (orderId: string) => {
+    setExpandedOrder(expandedOrder === orderId ? null : orderId);
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -359,66 +354,112 @@ const OrderHistory = () => {
         ) : (
           <div className="space-y-6">
             {orders.map((order) => {
-              const status = getStatusLabel(order.status);
+              const statusConfig = getStatusConfig(order.status);
+              const isExpanded = expandedOrder === order.id;
+              
               return (
                 <div
                   key={order.id}
-                  className="bg-card rounded-lg border p-6 space-y-4"
+                  className="bg-card rounded-lg border overflow-hidden"
                 >
-                  <div className="flex flex-wrap items-start justify-between gap-4">
-                    <div>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-                        <Calendar className="h-4 w-4" />
-                        {format(new Date(order.created_at), "d MMMM yyyy 'à' HH:mm", { locale: fr })}
+                  {/* Order Header */}
+                  <div 
+                    className="p-6 cursor-pointer hover:bg-muted/30 transition-colors"
+                    onClick={() => toggleOrderExpand(order.id)}
+                  >
+                    <div className="flex flex-wrap items-start justify-between gap-4">
+                      <div>
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
+                          <Calendar className="h-4 w-4" />
+                          {format(new Date(order.created_at), "d MMMM yyyy 'à' HH:mm", { locale: fr })}
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Réf: {order.paypal_order_id}
+                        </p>
                       </div>
-                      <p className="text-xs text-muted-foreground">
-                        Réf: {order.paypal_order_id}
-                      </p>
+                      <StatusBadge status={order.status} />
                     </div>
-                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${status.color}`}>
-                      {status.text}
-                    </span>
-                  </div>
 
-                  <div className="border-t pt-4 space-y-2">
-                    {parseItems(order.items).map((item, index) => (
-                      <div key={index} className="flex justify-between text-sm">
-                        <span>
-                          {item.name} <span className="text-muted-foreground">x{item.quantity}</span>
+                    {/* Mini items preview */}
+                    <div className="mt-4 text-sm text-muted-foreground">
+                      {parseItems(order.items).map((item, index) => (
+                        <span key={index}>
+                          {item.name} x{item.quantity}
+                          {index < parseItems(order.items).length - 1 && ", "}
                         </span>
-                        <span>{(item.price * item.quantity).toFixed(2)} €</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="border-t pt-4 flex flex-wrap items-center justify-between gap-4">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <CreditCard className="h-4 w-4" />
-                      PayPal
+                      ))}
                     </div>
-                    <div className="flex items-center gap-4">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDownloadReceipt(order)}
-                      >
-                        <Download className="h-4 w-4 mr-2" />
-                        Télécharger le reçu
-                      </Button>
+
+                    <div className="mt-4 flex items-center justify-between">
                       <p className="text-lg font-semibold">
-                        Total: {order.total_amount.toFixed(2)} {order.currency}
+                        {order.total_amount.toFixed(2)} {order.currency}
                       </p>
+                      <span className="text-sm text-primary">
+                        {isExpanded ? "Masquer les détails ▲" : "Voir les détails ▼"}
+                      </span>
                     </div>
                   </div>
 
-                  {order.received_at && (
-                    <p className="text-xs text-muted-foreground border-t pt-4">
-                      Livrée le {format(new Date(order.received_at), "d MMMM yyyy", { locale: fr })}
-                      <br />
-                      <span className="text-xs">
-                        (Données conservées jusqu'au {format(new Date(new Date(order.received_at).getTime() + 3 * 365 * 24 * 60 * 60 * 1000), "d MMMM yyyy", { locale: fr })} - RGPD)
-                      </span>
-                    </p>
+                  {/* Expanded Details */}
+                  {isExpanded && (
+                    <div className="border-t px-6 py-6 space-y-6 bg-muted/20">
+                      {/* Order Status Timeline */}
+                      <div className="bg-background rounded-lg p-4 border">
+                        <h4 className="font-medium mb-4 text-center">Suivi de votre commande</h4>
+                        <OrderStatusTimeline currentStatus={order.status} />
+                      </div>
+
+                      {/* Items Detail */}
+                      <div>
+                        <h4 className="font-medium mb-3">Articles commandés</h4>
+                        <div className="space-y-2">
+                          {parseItems(order.items).map((item, index) => (
+                            <div 
+                              key={index} 
+                              className="flex justify-between text-sm bg-background p-3 rounded-lg"
+                            >
+                              <span>
+                                {item.name}{" "}
+                                <span className="text-muted-foreground">x{item.quantity}</span>
+                              </span>
+                              <span className="font-medium">
+                                {(item.price * item.quantity).toFixed(2)} €
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Payment & Actions */}
+                      <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t">
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <CreditCard className="h-4 w-4" />
+                          Paiement PayPal
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDownloadReceipt(order);
+                          }}
+                        >
+                          <Download className="h-4 w-4 mr-2" />
+                          Télécharger le reçu
+                        </Button>
+                      </div>
+
+                      {/* RGPD Info */}
+                      {order.received_at && (
+                        <p className="text-xs text-muted-foreground pt-4 border-t">
+                          Livrée le {format(new Date(order.received_at), "d MMMM yyyy", { locale: fr })}
+                          <br />
+                          <span className="text-xs">
+                            (Données conservées jusqu'au {format(new Date(new Date(order.received_at).getTime() + 3 * 365 * 24 * 60 * 60 * 1000), "d MMMM yyyy", { locale: fr })} - RGPD)
+                          </span>
+                        </p>
+                      )}
+                    </div>
                   )}
                 </div>
               );
