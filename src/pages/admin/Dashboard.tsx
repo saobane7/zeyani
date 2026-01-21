@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Package, ShoppingCart, TrendingUp, Users } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { Link } from 'react-router-dom';
 
 const AdminDashboard = () => {
   const { data: productsCount } = useQuery({
@@ -92,8 +93,8 @@ const AdminDashboard = () => {
             <CardTitle>Actions rapides</CardTitle>
           </CardHeader>
           <CardContent className="grid grid-cols-2 gap-4">
-            <a
-              href="/admin/produits/nouveau"
+            <Link
+              to="/admin/produits/nouveau"
               className="p-4 border rounded-lg hover:bg-muted transition-colors"
             >
               <Package className="h-6 w-6 mb-2 text-primary" />
@@ -101,9 +102,9 @@ const AdminDashboard = () => {
               <p className="text-sm text-muted-foreground">
                 Créer un nouveau produit
               </p>
-            </a>
-            <a
-              href="/admin/commandes"
+            </Link>
+            <Link
+              to="/admin/commandes"
               className="p-4 border rounded-lg hover:bg-muted transition-colors"
             >
               <ShoppingCart className="h-6 w-6 mb-2 text-primary" />
@@ -111,7 +112,7 @@ const AdminDashboard = () => {
               <p className="text-sm text-muted-foreground">
                 Gérer les commandes clients
               </p>
-            </a>
+            </Link>
           </CardContent>
         </Card>
       </div>

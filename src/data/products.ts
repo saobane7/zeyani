@@ -13,7 +13,9 @@ import ring1 from "@/assets/ring-1.jpg";
 
 // Images des variantes pour Agadez
 import croixAgadezChaineDore from "@/assets/croix-agadez-chaine-dore.jpg";
+import croixAgadezChaineDore2 from "@/assets/croix-agadez-chaine-dore-2.jpg";
 import croixAgadezChaineArgente from "@/assets/croix-agadez-chaine-argente.jpg";
+import croixAgadezChaineArgente2 from "@/assets/croix-agadez-chaine-argente-2.jpg";
 import croixAgadezPerleDore from "@/assets/croix-agadez-perle-dore.jpg";
 import croixAgadezPerleArgente from "@/assets/croix-agadez-perle-argente.jpg";
 
@@ -44,7 +46,7 @@ export interface Product {
   dimensions?: string;
   hasVariants?: boolean;
   variants?: ProductVariant[];
-  variantImages?: Record<string, string>;
+  variantImages?: Record<string, string[]>;
 }
 
 // Descriptions des croix pour le carrousel
@@ -115,10 +117,10 @@ export const products: Product[] = [
     hasVariants: true,
     variants: generateNecklaceVariants(true),
     variantImages: {
-      "chaine-argente": croixAgadezChaineArgente,
-      "chaine-dore": croixAgadezChaineDore,
-      "perle-argente": croixAgadezPerleArgente,
-      "perle-dore": croixAgadezPerleDore,
+      "chaine-argente": [croixAgadezChaineArgente, croixAgadezChaineArgente2],
+      "chaine-dore": [croixAgadezChaineDore, croixAgadezChaineDore2],
+      "perle-argente": [croixAgadezPerleArgente],
+      "perle-dore": [croixAgadezPerleDore],
     },
   },
   {
