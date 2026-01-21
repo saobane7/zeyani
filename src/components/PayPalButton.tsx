@@ -68,7 +68,7 @@ const PayPalButton = ({ onSuccess, onError, disabled = false, shippingOption }: 
 
       // Create and load PayPal script
       const script = document.createElement("script");
-      script.src = `https://www.paypal.com/sdk/js?client-id=${data.clientId}&currency=EUR&locale=fr_FR&intent=capture`;
+      script.src = `https://www.paypal.com/sdk/js?client-id=${data.clientId}&currency=EUR&locale=fr_FR`;
       script.async = true;
       script.id = "paypal-sdk";
       
@@ -126,16 +126,16 @@ const PayPalButton = ({ onSuccess, onError, disabled = false, shippingOption }: 
           height: 50,
           tagline: false,
         },
-        fundingSource: undefined, // Allow all funding sources (PayPal + Cards)
         
-        createOrder: async () => {
-          console.log("Creating PayPal order...");
+        // IMPORTANT: createOrder must use actions.order.create() which returns a Promise<string>
+        createOrder: async (_data: any, actions: any) => {
+          console.log("Creating PayPal order via actions.order.create...");
           
           try {
             // Build items for PayPal
             const purchaseItems = items.map((item) => ({
               name: item.product.name.substring(0, 127),
-              quantity: String(item.quantity),
+              quantity: item.quantity,
               unit_amount: {
                 currency_code: "EUR",
                 value: item.product.price.toFixed(2),
@@ -146,7 +146,7 @@ const PayPalButton = ({ onSuccess, onError, disabled = false, shippingOption }: 
             if (shippingOption.price > 0) {
               purchaseItems.push({
                 name: `Livraison - ${shippingOption.label}`.substring(0, 127),
-                quantity: "1",
+                quantity: 1,
                 unit_amount: {
                   currency_code: "EUR",
                   value: shippingOption.price.toFixed(2),
@@ -160,8 +160,11 @@ const PayPalButton = ({ onSuccess, onError, disabled = false, shippingOption }: 
               0
             ) + shippingOption.price;
 
-            const orderData = {
-              intent: "CAPTURE",
+            console.log("Creating order with total:", itemTotal.toFixed(2));
+
+            // Use actions.order.create() - this is the correct PayPal SDK method
+            // It returns a Promise that resolves to the order ID
+            const orderId = await actions.order.create({
               purchase_units: [{
                 amount: {
                   currency_code: "EUR",
@@ -173,46 +176,27 @@ const PayPalButton = ({ onSuccess, onError, disabled = false, shippingOption }: 
                     },
                   },
                 },
-                items: purchaseItems,
+                items: purchaseItems.map(item => ({
+                  name: item.name,
+                  quantity: String(item.quantity),
+                  unit_amount: {
+                    currency_code: "EUR",
+                    value: item.unit_amount.value,
+                  },
+                })),
               }],
               application_context: {
                 shipping_preference: "GET_FROM_FILE",
                 user_action: "PAY_NOW",
                 brand_name: "Niger Chic Designs",
               },
-            };
-
-            console.log("Order data:", JSON.stringify(orderData, null, 2));
-
-            // Validate on backend
-            const { data, error } = await supabase.functions.invoke("create-paypal-order", {
-              body: {
-                items: purchaseItems.map(item => ({
-                  name: item.name,
-                  quantity: parseInt(item.quantity),
-                  unit_amount: { value: item.unit_amount.value },
-                })),
-                totalAmount: itemTotal,
-              },
             });
 
-            if (error) {
-              console.error("Backend validation error:", error);
-              throw new Error("Erreur de validation du panier");
-            }
-
-            if (!data?.success) {
-              console.error("Backend validation failed:", data);
-              throw new Error(data?.error || "Erreur de validation");
-            }
-
-            console.log("Backend validated, creating PayPal order...");
-            
-            // Return order data for PayPal SDK to create the order
-            return data.orderData;
+            console.log("PayPal order created with ID:", orderId);
+            return orderId;
           } catch (err: any) {
             console.error("Create order error:", err);
-            toast.error(err.message || "Erreur lors de la création de la commande");
+            toast.error("Erreur lors de la création de la commande PayPal");
             throw err;
           }
         },
@@ -221,11 +205,11 @@ const PayPalButton = ({ onSuccess, onError, disabled = false, shippingOption }: 
           console.log("Payment approved, capturing order...", data);
           
           try {
-            // Capture the payment
+            // Capture the payment using the SDK
             const orderDetails = await actions.order.capture();
             console.log("Order captured successfully:", orderDetails);
 
-            // Store order in database
+            // Store order in our database
             const { error: captureError } = await supabase.functions.invoke("capture-paypal-order", {
               body: {
                 orderId: orderDetails.id,
@@ -248,7 +232,7 @@ const PayPalButton = ({ onSuccess, onError, disabled = false, shippingOption }: 
 
             if (captureError) {
               console.error("Order storage error:", captureError);
-              // Don't fail - payment was successful
+              // Don't fail - payment was successful, just log for debugging
             }
 
             // Clear cart and notify success
@@ -257,20 +241,30 @@ const PayPalButton = ({ onSuccess, onError, disabled = false, shippingOption }: 
             onSuccess(orderDetails.id);
           } catch (err: any) {
             console.error("Capture error:", err);
-            onError("Erreur lors de la finalisation du paiement. Veuillez contacter le support.");
+            
+            // Handle specific PayPal errors
+            if (err?.message?.includes("INSTRUMENT_DECLINED")) {
+              onError("Votre moyen de paiement a été refusé. Veuillez essayer avec une autre carte.");
+            } else {
+              onError("Erreur lors de la finalisation du paiement. Veuillez réessayer.");
+            }
           }
         },
 
         onError: (err: any) => {
           console.error("PayPal SDK error:", err);
           
-          // Provide more specific error messages
+          // Provide more specific error messages based on error type
           let errorMessage = "Une erreur est survenue avec PayPal.";
           
-          if (err?.message?.includes("popup")) {
-            errorMessage = "La fenêtre de paiement a été bloquée. Veuillez autoriser les popups.";
-          } else if (err?.message?.includes("network")) {
-            errorMessage = "Erreur de connexion. Vérifiez votre connexion internet.";
+          if (err?.message) {
+            if (err.message.includes("popup") || err.message.includes("blocked")) {
+              errorMessage = "La fenêtre de paiement a été bloquée. Veuillez autoriser les popups.";
+            } else if (err.message.includes("network") || err.message.includes("fetch")) {
+              errorMessage = "Erreur de connexion. Vérifiez votre connexion internet.";
+            } else if (err.message.includes("cancel")) {
+              errorMessage = "Paiement annulé.";
+            }
           }
           
           toast.error(errorMessage);
