@@ -716,13 +716,16 @@ export const ProductForm = ({ initialData, onSubmit, isSubmitting }: ProductForm
                               />
                             </div>
                             <div className="space-y-1">
-                              <Label className="text-xs">Supplément prix (€)</Label>
+                              <Label className="text-xs">Prix de la variante (€) *</Label>
                               <Input
                                 type="number"
+                                step="0.01"
                                 value={variant.price}
                                 onChange={(e) => updateVariant(index, 'price', parseFloat(e.target.value) || 0)}
-                                className="h-9"
+                                className="h-9 border-primary/50 font-semibold"
+                                placeholder="0.00"
                               />
+                              <p className="text-xs text-muted-foreground">Prix affiché pour cette variante</p>
                             </div>
                           </div>
                         </div>

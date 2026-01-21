@@ -83,12 +83,15 @@ const Product = () => {
         .filter(([_, images]) => images && images.length > 0 && images[0]) // Ne garder que celles avec une vraie image
         .map(([key, images]) => {
           const [type, color] = key.split('-');
+          // Trouver la variante correspondante pour récupérer le prix
+          const variant = product.variants?.find((v: any) => v.type === type && v.color === color);
           return {
             key,
             type: type as 'chain' | 'bead',
             color: color as 'dore' | 'argente',
             image: images[0],
-            label: `${type === 'chain' ? 'Chaîne' : 'Perles'} ${color === 'dore' ? 'Doré' : 'Argenté'}`
+            label: `${type === 'chain' ? 'Chaîne' : 'Perles'} ${color === 'dore' ? 'Doré' : 'Argenté'}`,
+            price: variant?.price || 0
           };
         })
     : [];
@@ -96,6 +99,17 @@ const Product = () => {
   // Déterminer les types et couleurs disponibles basés sur les variantes avec images
   const availableTypes = [...new Set(allVariantImages.map(v => v.type))];
   const availableColors = [...new Set(allVariantImages.map(v => v.color))];
+  
+  // Récupérer le prix pour chaque type/couleur à afficher dans les options
+  const getVariantPrice = (type: string, color?: string) => {
+    if (color) {
+      const variant = allVariantImages.find(v => v.type === type && v.color === color);
+      return variant?.price || 0;
+    }
+    // Pour le type seul, prendre le premier prix disponible avec ce type
+    const variant = allVariantImages.find(v => v.type === type);
+    return variant?.price || 0;
+  };
 
   // Image de la variante actuellement sélectionnée
   const currentVariantImage = variantKey && product.variantImages?.[variantKey]?.[0] 
@@ -251,36 +265,25 @@ const Product = () => {
                         onValueChange={(value) => setSelectedType(value as "chain" | "bead")}
                         className="flex flex-wrap gap-3"
                       >
-                        {availableTypes.includes('chain') && (
-                          <div className="flex items-center">
-                            <RadioGroupItem value="chain" id="chain" className="peer sr-only" />
-                            <Label 
-                              htmlFor="chain" 
-                              className={`px-4 py-2 sm:px-5 sm:py-2.5 rounded-full border-2 cursor-pointer transition-all text-sm sm:text-base ${
-                                selectedType === "chain" 
-                                  ? "border-gold bg-gold/10 text-gold-dark" 
-                                  : "border-border hover:border-gold/50"
-                              }`}
-                            >
-                              Chaîne - 23€
-                            </Label>
-                          </div>
-                        )}
-                        {availableTypes.includes('bead') && (
-                          <div className="flex items-center">
-                            <RadioGroupItem value="bead" id="bead" className="peer sr-only" />
-                            <Label 
-                              htmlFor="bead" 
-                              className={`px-4 py-2 sm:px-5 sm:py-2.5 rounded-full border-2 cursor-pointer transition-all text-sm sm:text-base ${
-                                selectedType === "bead" 
-                                  ? "border-gold bg-gold/10 text-gold-dark" 
-                                  : "border-border hover:border-gold/50"
-                              }`}
-                            >
-                              Perles - 25€
-                            </Label>
-                          </div>
-                        )}
+                        {availableTypes.map((type) => {
+                          const typeLabel = type === 'chain' ? 'Chaîne' : 'Perles';
+                          const typePrice = getVariantPrice(type, selectedColor);
+                          return (
+                            <div key={type} className="flex items-center">
+                              <RadioGroupItem value={type} id={type} className="peer sr-only" />
+                              <Label 
+                                htmlFor={type} 
+                                className={`px-4 py-2 sm:px-5 sm:py-2.5 rounded-full border-2 cursor-pointer transition-all text-sm sm:text-base ${
+                                  selectedType === type 
+                                    ? "border-gold bg-gold/10 text-gold-dark" 
+                                    : "border-border hover:border-gold/50"
+                                }`}
+                              >
+                                {typeLabel} - {formatPrice(typePrice)}
+                              </Label>
+                            </div>
+                          );
+                        })}
                       </RadioGroup>
                     </div>
                   )}
@@ -294,38 +297,29 @@ const Product = () => {
                         onValueChange={(value) => setSelectedColor(value as "dore" | "argente")}
                         className="flex flex-wrap gap-3"
                       >
-                        {availableColors.includes('argente') && (
-                          <div className="flex items-center">
-                            <RadioGroupItem value="argente" id="argente" className="peer sr-only" />
-                            <Label 
-                              htmlFor="argente" 
-                              className={`flex items-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 rounded-full border-2 cursor-pointer transition-all text-sm sm:text-base ${
-                                selectedColor === "argente" 
-                                  ? "border-gold bg-gold/10 text-gold-dark" 
-                                  : "border-border hover:border-gold/50"
-                              }`}
-                            >
-                              <span className="w-4 h-4 rounded-full bg-gradient-to-br from-gray-300 to-gray-500 border border-gray-400" />
-                              Argenté
-                            </Label>
-                          </div>
-                        )}
-                        {availableColors.includes('dore') && (
-                          <div className="flex items-center">
-                            <RadioGroupItem value="dore" id="dore" className="peer sr-only" />
-                            <Label 
-                              htmlFor="dore" 
-                              className={`flex items-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 rounded-full border-2 cursor-pointer transition-all text-sm sm:text-base ${
-                                selectedColor === "dore" 
-                                  ? "border-gold bg-gold/10 text-gold-dark" 
-                                  : "border-border hover:border-gold/50"
-                              }`}
-                            >
-                              <span className="w-4 h-4 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 border border-yellow-500" />
-                              Doré
-                            </Label>
-                          </div>
-                        )}
+                        {availableColors.map((color) => {
+                          const colorLabel = color === 'dore' ? 'Doré' : 'Argenté';
+                          const colorPrice = getVariantPrice(selectedType, color);
+                          const colorStyle = color === 'dore' 
+                            ? 'bg-gradient-to-br from-yellow-400 to-yellow-600 border border-yellow-500'
+                            : 'bg-gradient-to-br from-gray-300 to-gray-500 border border-gray-400';
+                          return (
+                            <div key={color} className="flex items-center">
+                              <RadioGroupItem value={color} id={color} className="peer sr-only" />
+                              <Label 
+                                htmlFor={color} 
+                                className={`flex items-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 rounded-full border-2 cursor-pointer transition-all text-sm sm:text-base ${
+                                  selectedColor === color 
+                                    ? "border-gold bg-gold/10 text-gold-dark" 
+                                    : "border-border hover:border-gold/50"
+                                }`}
+                              >
+                                <span className={`w-4 h-4 rounded-full ${colorStyle}`} />
+                                {colorLabel} - {formatPrice(colorPrice)}
+                              </Label>
+                            </div>
+                          );
+                        })}
                       </RadioGroup>
                     </div>
                   )}
