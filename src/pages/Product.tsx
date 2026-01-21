@@ -77,7 +77,7 @@ const Product = () => {
     ? product.variantImages[variantKey]
     : product.images;
 
-  // Collecter uniquement les images de variantes uploadées par l'admin (exclure les vides/undefined)
+  // Collecter uniquement les variantes qui ont une image uploadée par l'admin
   const allVariantImages = product.hasVariants && product.variantImages 
     ? Object.entries(product.variantImages)
         .filter(([_, images]) => images && images.length > 0 && images[0]) // Ne garder que celles avec une vraie image
@@ -92,6 +92,10 @@ const Product = () => {
           };
         })
     : [];
+
+  // Déterminer les types et couleurs disponibles basés sur les variantes avec images
+  const availableTypes = [...new Set(allVariantImages.map(v => v.type))];
+  const availableColors = [...new Set(allVariantImages.map(v => v.color))];
 
   // Image de la variante actuellement sélectionnée
   const currentVariantImage = variantKey && product.variantImages?.[variantKey]?.[0] 
@@ -235,84 +239,96 @@ const Product = () => {
                 {product.longDescription}
               </p>
 
-              {/* Variantes */}
-              {product.hasVariants && product.variants && product.variants.length > 0 && (
+              {/* Variantes - afficher uniquement si des variantes avec images existent */}
+              {product.hasVariants && allVariantImages.length > 0 && (
                 <div className="space-y-6 mb-6 sm:mb-8 p-4 sm:p-6 bg-sand-light rounded-xl">
-                  {/* Type de chaîne */}
-                  <div>
-                    <h3 className="font-medium text-foreground mb-3 text-sm sm:text-base">Type de collier</h3>
-                    <RadioGroup 
-                      value={selectedType} 
-                      onValueChange={(value) => setSelectedType(value as "chain" | "bead")}
-                      className="flex flex-wrap gap-3"
-                    >
-                      <div className="flex items-center">
-                        <RadioGroupItem value="chain" id="chain" className="peer sr-only" />
-                        <Label 
-                          htmlFor="chain" 
-                          className={`px-4 py-2 sm:px-5 sm:py-2.5 rounded-full border-2 cursor-pointer transition-all text-sm sm:text-base ${
-                            selectedType === "chain" 
-                              ? "border-gold bg-gold/10 text-gold-dark" 
-                              : "border-border hover:border-gold/50"
-                          }`}
-                        >
-                          Chaîne - 23€
-                        </Label>
-                      </div>
-                      <div className="flex items-center">
-                        <RadioGroupItem value="bead" id="bead" className="peer sr-only" />
-                        <Label 
-                          htmlFor="bead" 
-                          className={`px-4 py-2 sm:px-5 sm:py-2.5 rounded-full border-2 cursor-pointer transition-all text-sm sm:text-base ${
-                            selectedType === "bead" 
-                              ? "border-gold bg-gold/10 text-gold-dark" 
-                              : "border-border hover:border-gold/50"
-                          }`}
-                        >
-                          Perles - 25€
-                        </Label>
-                      </div>
-                    </RadioGroup>
-                  </div>
+                  {/* Type de chaîne - afficher uniquement les types disponibles */}
+                  {availableTypes.length > 0 && (
+                    <div>
+                      <h3 className="font-medium text-foreground mb-3 text-sm sm:text-base">Type de collier</h3>
+                      <RadioGroup 
+                        value={selectedType} 
+                        onValueChange={(value) => setSelectedType(value as "chain" | "bead")}
+                        className="flex flex-wrap gap-3"
+                      >
+                        {availableTypes.includes('chain') && (
+                          <div className="flex items-center">
+                            <RadioGroupItem value="chain" id="chain" className="peer sr-only" />
+                            <Label 
+                              htmlFor="chain" 
+                              className={`px-4 py-2 sm:px-5 sm:py-2.5 rounded-full border-2 cursor-pointer transition-all text-sm sm:text-base ${
+                                selectedType === "chain" 
+                                  ? "border-gold bg-gold/10 text-gold-dark" 
+                                  : "border-border hover:border-gold/50"
+                              }`}
+                            >
+                              Chaîne - 23€
+                            </Label>
+                          </div>
+                        )}
+                        {availableTypes.includes('bead') && (
+                          <div className="flex items-center">
+                            <RadioGroupItem value="bead" id="bead" className="peer sr-only" />
+                            <Label 
+                              htmlFor="bead" 
+                              className={`px-4 py-2 sm:px-5 sm:py-2.5 rounded-full border-2 cursor-pointer transition-all text-sm sm:text-base ${
+                                selectedType === "bead" 
+                                  ? "border-gold bg-gold/10 text-gold-dark" 
+                                  : "border-border hover:border-gold/50"
+                              }`}
+                            >
+                              Perles - 25€
+                            </Label>
+                          </div>
+                        )}
+                      </RadioGroup>
+                    </div>
+                  )}
 
-                  {/* Couleur */}
-                  <div>
-                    <h3 className="font-medium text-foreground mb-3 text-sm sm:text-base">Couleur</h3>
-                    <RadioGroup 
-                      value={selectedColor} 
-                      onValueChange={(value) => setSelectedColor(value as "dore" | "argente")}
-                      className="flex flex-wrap gap-3"
-                    >
-                      <div className="flex items-center">
-                        <RadioGroupItem value="argente" id="argente" className="peer sr-only" />
-                        <Label 
-                          htmlFor="argente" 
-                          className={`flex items-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 rounded-full border-2 cursor-pointer transition-all text-sm sm:text-base ${
-                            selectedColor === "argente" 
-                              ? "border-gold bg-gold/10 text-gold-dark" 
-                              : "border-border hover:border-gold/50"
-                          }`}
-                        >
-                          <span className="w-4 h-4 rounded-full bg-gradient-to-br from-gray-300 to-gray-500 border border-gray-400" />
-                          Argenté
-                        </Label>
-                      </div>
-                      <div className="flex items-center">
-                        <RadioGroupItem value="dore" id="dore" className="peer sr-only" />
-                        <Label 
-                          htmlFor="dore" 
-                          className={`flex items-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 rounded-full border-2 cursor-pointer transition-all text-sm sm:text-base ${
-                            selectedColor === "dore" 
-                              ? "border-gold bg-gold/10 text-gold-dark" 
-                              : "border-border hover:border-gold/50"
-                          }`}
-                        >
-                          <span className="w-4 h-4 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 border border-yellow-500" />
-                          Doré
-                        </Label>
-                      </div>
-                    </RadioGroup>
-                  </div>
+                  {/* Couleur - afficher uniquement les couleurs disponibles */}
+                  {availableColors.length > 0 && (
+                    <div>
+                      <h3 className="font-medium text-foreground mb-3 text-sm sm:text-base">Couleur</h3>
+                      <RadioGroup 
+                        value={selectedColor} 
+                        onValueChange={(value) => setSelectedColor(value as "dore" | "argente")}
+                        className="flex flex-wrap gap-3"
+                      >
+                        {availableColors.includes('argente') && (
+                          <div className="flex items-center">
+                            <RadioGroupItem value="argente" id="argente" className="peer sr-only" />
+                            <Label 
+                              htmlFor="argente" 
+                              className={`flex items-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 rounded-full border-2 cursor-pointer transition-all text-sm sm:text-base ${
+                                selectedColor === "argente" 
+                                  ? "border-gold bg-gold/10 text-gold-dark" 
+                                  : "border-border hover:border-gold/50"
+                              }`}
+                            >
+                              <span className="w-4 h-4 rounded-full bg-gradient-to-br from-gray-300 to-gray-500 border border-gray-400" />
+                              Argenté
+                            </Label>
+                          </div>
+                        )}
+                        {availableColors.includes('dore') && (
+                          <div className="flex items-center">
+                            <RadioGroupItem value="dore" id="dore" className="peer sr-only" />
+                            <Label 
+                              htmlFor="dore" 
+                              className={`flex items-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 rounded-full border-2 cursor-pointer transition-all text-sm sm:text-base ${
+                                selectedColor === "dore" 
+                                  ? "border-gold bg-gold/10 text-gold-dark" 
+                                  : "border-border hover:border-gold/50"
+                              }`}
+                            >
+                              <span className="w-4 h-4 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 border border-yellow-500" />
+                              Doré
+                            </Label>
+                          </div>
+                        )}
+                      </RadioGroup>
+                    </div>
+                  )}
 
                   {/* Résumé de la sélection */}
                   {selectedVariant && (
