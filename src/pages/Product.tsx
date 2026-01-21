@@ -77,18 +77,20 @@ const Product = () => {
     ? product.variantImages[variantKey]
     : product.images;
 
-  // Collecter toutes les images de variantes pour les miniatures
+  // Collecter uniquement les images de variantes uploadées par l'admin (exclure les vides/undefined)
   const allVariantImages = product.hasVariants && product.variantImages 
-    ? Object.entries(product.variantImages).map(([key, images]) => {
-        const [type, color] = key.split('-');
-        return {
-          key,
-          type: type as 'chain' | 'bead',
-          color: color as 'dore' | 'argente',
-          image: images[0],
-          label: `${type === 'chain' ? 'Chaîne' : 'Perles'} ${color === 'dore' ? 'Doré' : 'Argenté'}`
-        };
-      })
+    ? Object.entries(product.variantImages)
+        .filter(([_, images]) => images && images.length > 0 && images[0]) // Ne garder que celles avec une vraie image
+        .map(([key, images]) => {
+          const [type, color] = key.split('-');
+          return {
+            key,
+            type: type as 'chain' | 'bead',
+            color: color as 'dore' | 'argente',
+            image: images[0],
+            label: `${type === 'chain' ? 'Chaîne' : 'Perles'} ${color === 'dore' ? 'Doré' : 'Argenté'}`
+          };
+        })
     : [];
 
   // Image de la variante actuellement sélectionnée
