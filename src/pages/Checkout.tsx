@@ -1,15 +1,16 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/hooks/useAuth";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import PayPalButton from "@/components/PayPalButton";
+import OrderReceipt from "@/components/OrderReceipt";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, CheckCircle2, ShieldCheck, Lock, Package, Truck, MapPin, Building2, Gift, LogIn, Loader2 } from "lucide-react";
+import { ArrowLeft, CheckCircle2, ShieldCheck, Lock, Package, Truck, MapPin, Building2, Gift, LogIn, Loader2, FileText, History } from "lucide-react";
 
 export type ShippingOption = "free" | "locker" | "relay" | "home";
 
@@ -28,17 +29,37 @@ export const SHIPPING_OPTIONS: Record<ShippingOption, ShippingInfo> = {
 
 const Checkout = () => {
   const navigate = useNavigate();
-  const { items, totalPrice } = useCart();
+  const { items, totalPrice, clearCart } = useCart();
   const { user, loading: authLoading } = useAuth();
   const [orderSuccess, setOrderSuccess] = useState(false);
   const [orderId, setOrderId] = useState<string | null>(null);
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const [selectedShipping, setSelectedShipping] = useState<ShippingOption>("free");
+  const [orderDate, setOrderDate] = useState<Date>(new Date());
+  
+  // Store order items for the receipt (since cart will be cleared)
+  const [orderItems, setOrderItems] = useState<Array<{
+    name: string;
+    quantity: number;
+    price: number;
+  }>>([]);
+  const [orderSubtotal, setOrderSubtotal] = useState(0);
+  const [orderShipping, setOrderShipping] = useState(SHIPPING_OPTIONS.free);
 
   const shippingPrice = SHIPPING_OPTIONS[selectedShipping].price;
   const finalTotal = totalPrice + shippingPrice;
 
   const handleSuccess = (id: string) => {
+    // Store order details before clearing cart
+    setOrderItems(items.map(item => ({
+      name: item.product.name,
+      quantity: item.quantity,
+      price: item.product.price,
+    })));
+    setOrderSubtotal(totalPrice);
+    setOrderShipping(SHIPPING_OPTIONS[selectedShipping]);
+    setOrderDate(new Date());
+    
     setOrderId(id);
     setOrderSuccess(true);
     setPaymentError(null);
@@ -111,24 +132,53 @@ const Checkout = () => {
     );
   }
 
-  if (orderSuccess) {
+  if (orderSuccess && orderId) {
     return (
       <div className="min-h-screen bg-background">
         <Header />
-        <main className="container mx-auto px-4 py-16">
-          <div className="max-w-lg mx-auto text-center">
-            <CheckCircle2 className="h-20 w-20 mx-auto text-green-600 mb-6" />
-            <h1 className="text-3xl font-serif mb-4">Commande confirmée !</h1>
-            <p className="text-muted-foreground mb-2">
-              Merci pour votre commande.
-            </p>
-            <p className="text-sm text-muted-foreground mb-6">
-              Numéro de commande : <span className="font-mono font-medium">{orderId}</span>
-            </p>
-            <p className="text-muted-foreground mb-8">
-              Vous recevrez un email de confirmation avec les détails de votre commande.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+        <main className="container mx-auto px-4 py-8 lg:py-12">
+          <div className="max-w-2xl mx-auto">
+            {/* Success Header */}
+            <div className="text-center mb-8">
+              <CheckCircle2 className="h-16 w-16 mx-auto text-green-600 mb-4" />
+              <h1 className="text-3xl font-serif mb-2">Commande confirmée !</h1>
+              <p className="text-muted-foreground">
+                Merci pour votre confiance. Votre commande a été enregistrée avec succès.
+              </p>
+            </div>
+
+            {/* Important Notice */}
+            <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 mb-6">
+              <div className="flex items-start gap-3">
+                <FileText className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                <div>
+                  <h3 className="font-semibold text-foreground mb-1">
+                    Téléchargez votre reçu
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    Conservez ce reçu pour vos dossiers. Il contient toutes les informations 
+                    relatives à votre commande.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Order Receipt Component */}
+            <OrderReceipt
+              orderId={orderId}
+              items={orderItems}
+              shipping={orderShipping}
+              subtotal={orderSubtotal}
+              total={orderSubtotal + orderShipping.price}
+              date={orderDate}
+            />
+
+            {/* Navigation Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
+              <Button onClick={() => navigate("/orders")} variant="outline">
+                <History className="h-4 w-4 mr-2" />
+                Voir mes commandes
+              </Button>
               <Button onClick={() => navigate("/")}>
                 Retour à l'accueil
               </Button>
