@@ -39,12 +39,13 @@ const localImageMap: Record<string, string[]> = {
 };
 
 // Map for variant images (multiple images per variant)
+// Keys are in format: "type-color" where type is "chain" or "bead" and color is "dore" or "argente"
 const variantImageMap: Record<string, Record<string, string[]>> = {
   'collier-croix-agadez': {
-    'Chaîne-Doré': [croixAgadezChaineDore, croixAgadezChaineDore2],
-    'Chaîne-Argenté': [croixAgadezChaineArgente, croixAgadezChaineArgente2],
-    'Perles-Doré': [croixAgadezPerleDore],
-    'Perles-Argenté': [croixAgadezPerleArgente],
+    'chain-dore': [croixAgadezChaineDore, croixAgadezChaineDore2],
+    'chain-argente': [croixAgadezChaineArgente, croixAgadezChaineArgente2],
+    'bead-dore': [croixAgadezPerleDore],
+    'bead-argente': [croixAgadezPerleArgente],
   },
 };
 
@@ -69,6 +70,31 @@ export interface Product {
   variantImages?: Record<string, string[]>;
 }
 
+// Build variant images from DB variants
+const buildVariantImages = (dbProduct: DbProduct): Record<string, string[]> => {
+  const variantImages: Record<string, string[]> = {};
+  
+  // First check if we have local images for this product
+  if (variantImageMap[dbProduct.slug]) {
+    return variantImageMap[dbProduct.slug];
+  }
+  
+  // Build from DB variants
+  if (dbProduct.variants && Array.isArray(dbProduct.variants)) {
+    dbProduct.variants.forEach((variant: any) => {
+      if (variant.type && variant.color && variant.image) {
+        const key = `${variant.type}-${variant.color}`;
+        if (!variantImages[key]) {
+          variantImages[key] = [];
+        }
+        variantImages[key].push(variant.image);
+      }
+    });
+  }
+  
+  return variantImages;
+};
+
 // Transform DB product to frontend format
 const transformProduct = (dbProduct: DbProduct): Product => {
   const localImages = localImageMap[dbProduct.slug] || [];
@@ -91,7 +117,7 @@ const transformProduct = (dbProduct: DbProduct): Product => {
     weight: dbProduct.weight ? `${dbProduct.weight}g` : undefined,
     hasVariants: dbProduct.variants && dbProduct.variants.length > 0,
     variants: dbProduct.variants || [],
-    variantImages: variantImageMap[dbProduct.slug] || {},
+    variantImages: buildVariantImages(dbProduct),
   };
 };
 
