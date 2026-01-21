@@ -8,6 +8,8 @@ import croixAgadez2 from '@/assets/croix-agadez-2.jpg';
 import croixAgadez3 from '@/assets/croix-agadez-3.jpg';
 import croixAgadezChaineDore from '@/assets/croix-agadez-chaine-dore.jpg';
 import croixAgadezChaineArgente from '@/assets/croix-agadez-chaine-argente.jpg';
+import croixAgadezChaineDore2 from '@/assets/croix-agadez-chaine-dore-2.jpg';
+import croixAgadezChaineArgente2 from '@/assets/croix-agadez-chaine-argente-2.jpg';
 import croixAgadezPerleDore from '@/assets/croix-agadez-perle-dore.jpg';
 import croixAgadezPerleArgente from '@/assets/croix-agadez-perle-argente.jpg';
 import croixTahoua from '@/assets/croix-tahoua.jpg';
@@ -32,13 +34,13 @@ const localImageMap: Record<string, string[]> = {
   'bague-touareg-gravee': [ring1],
 };
 
-// Map for variant images
-const variantImageMap: Record<string, Record<string, string>> = {
+// Map for variant images (multiple images per variant)
+const variantImageMap: Record<string, Record<string, string[]>> = {
   'croix-agadez': {
-    'Chaîne-Doré': croixAgadezChaineDore,
-    'Chaîne-Argenté': croixAgadezChaineArgente,
-    'Perles-Doré': croixAgadezPerleDore,
-    'Perles-Argenté': croixAgadezPerleArgente,
+    'Chaîne-Doré': [croixAgadezChaineDore, croixAgadezChaineDore2],
+    'Chaîne-Argenté': [croixAgadezChaineArgente, croixAgadezChaineArgente2],
+    'Perles-Doré': [croixAgadezPerleDore],
+    'Perles-Argenté': [croixAgadezPerleArgente],
   },
 };
 
@@ -60,7 +62,7 @@ export interface Product {
   dimensions?: string;
   hasVariants?: boolean;
   variants?: any[];
-  variantImages?: Record<string, string>;
+  variantImages?: Record<string, string[]>;
 }
 
 // Transform DB product to frontend format

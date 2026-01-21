@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Heart, ShoppingBag, Truck, Shield, RotateCcw, Minus, Plus, ChevronLeft, Check, Star, Loader2 } from "lucide-react";
@@ -22,6 +22,11 @@ const Product = () => {
   // Variantes
   const [selectedType, setSelectedType] = useState<"chain" | "bead">("chain");
   const [selectedColor, setSelectedColor] = useState<"dore" | "argente">("argente");
+
+  // Reset selected image when variant changes
+  useEffect(() => {
+    setSelectedImage(0);
+  }, [selectedType, selectedColor]);
 
   const { data: relatedProducts } = useProductsByCategory(product?.category?.toLowerCase() || "tous");
 
@@ -63,6 +68,16 @@ const Product = () => {
     : null;
 
   const currentPrice = selectedVariant ? selectedVariant.price : product.price;
+
+  // Construire la clé de variante pour chercher les images
+  const variantKey = selectedVariant 
+    ? `${selectedType === 'chain' ? 'chaine' : 'perle'}-${selectedColor}`
+    : null;
+
+  // Obtenir les images à afficher (variantes si disponibles, sinon images par défaut)
+  const displayImages = variantKey && product.variantImages?.[variantKey]?.length 
+    ? product.variantImages[variantKey]
+    : product.images;
 
   const handleAddToCart = () => {
     const productToAdd = {
@@ -121,8 +136,8 @@ const Product = () => {
             >
               <div className="aspect-square bg-secondary rounded-lg overflow-hidden">
                 <motion.img
-                  key={selectedImage}
-                  src={product.images[selectedImage]}
+                  key={`${variantKey}-${selectedImage}`}
+                  src={displayImages[selectedImage] || displayImages[0]}
                   alt={product.name}
                   className="w-full h-full object-cover"
                   initial={{ opacity: 0, scale: 1.05 }}
@@ -130,9 +145,9 @@ const Product = () => {
                   transition={{ duration: 0.4 }}
                 />
               </div>
-              {product.images.length > 1 && (
+              {displayImages.length > 1 && (
                 <div className="flex gap-2 sm:gap-3 overflow-x-auto pb-2">
-                  {product.images.map((img, idx) => (
+                  {displayImages.map((img, idx) => (
                     <button
                       key={idx}
                       onClick={() => setSelectedImage(idx)}
