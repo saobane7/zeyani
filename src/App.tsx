@@ -14,6 +14,10 @@ import Contact from "./pages/Contact";
 import Checkout from "./pages/Checkout";
 import Auth from "./pages/Auth";
 import OrderHistory from "./pages/OrderHistory";
+import SizeGuide from "./pages/SizeGuide";
+import MentionsLegales from "./pages/MentionsLegales";
+import Confidentialite from "./pages/Confidentialite";
+import CGV from "./pages/CGV";
 import NotFound from "./pages/NotFound";
 import AdminDashboard from "./pages/admin/Dashboard";
 import AdminProducts from "./pages/admin/Products";
@@ -43,6 +47,10 @@ const App = () => (
                 <Route path="/checkout" element={<Checkout />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/mes-commandes" element={<OrderHistory />} />
+                <Route path="/guide-des-tailles" element={<SizeGuide />} />
+                <Route path="/mentions-legales" element={<MentionsLegales />} />
+                <Route path="/confidentialite" element={<Confidentialite />} />
+                <Route path="/cgv" element={<CGV />} />
                 <Route path="/admin" element={<AdminDashboard />} />
                 <Route path="/admin/login" element={<AdminLogin />} />
                 <Route path="/admin/produits" element={<AdminProducts />} />

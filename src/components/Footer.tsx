@@ -11,16 +11,14 @@ const Footer = () => {
 
   const footerLinks = {
     boutique: [
-      { name: "Croix d'Agadez", href: "/collection" },
+      { name: "Croix Touarègues", href: "/collection" },
       { name: "Bracelets", href: "/collection" },
       { name: "Colliers", href: "/collection" },
-      { name: "Bagues", href: "/collection" },
     ],
     informations: [
       { name: "Notre Histoire", href: "/notre-histoire" },
       { name: "L'Héritage Touareg", href: "/notre-histoire" },
-      { name: "Guide des Tailles", href: "/contact" },
-      { name: "Entretien des Bijoux", href: "/contact" },
+      { name: "Guide des Tailles", href: "/guide-des-tailles" },
     ],
     service: [
       { name: "Contact", href: "/contact" },
@@ -60,20 +58,20 @@ const Footer = () => {
               L'Élégance Touareg
             </p>
             <p className="text-cream/60 mb-6 leading-relaxed max-w-md text-xs sm:text-sm">
-              Bijoux artisanaux authentiques du Niger. La Croix d'Agadez, 
-              symbole ancestral transmis de génération en génération, 
-              désormais accessible depuis la France.
+              Bijoux artisanaux authentiques du Niger. Les croix touarègues, 
+              symboles ancestraux transmis de génération en génération, 
+              désormais accessibles depuis la France.
             </p>
             
             {/* Contact */}
             <div className="space-y-2 sm:space-y-3">
               <div className="flex items-center gap-3 text-cream/60 text-xs sm:text-sm">
                 <MapPin className="h-4 w-4 text-gold flex-shrink-0" />
-                <span>France - Livraison Internationale</span>
+                <span>Livraison dans toute la France</span>
               </div>
-              <a href="tel:+33123456789" className="flex items-center gap-3 text-cream/60 text-xs sm:text-sm hover:text-gold transition-colors">
+              <a href="tel:+33780170158" className="flex items-center gap-3 text-cream/60 text-xs sm:text-sm hover:text-gold transition-colors">
                 <Phone className="h-4 w-4 text-gold flex-shrink-0" />
-                <span>+33 1 23 45 67 89</span>
+                <span>+33 7 80 17 01 58</span>
               </a>
               <a href="mailto:contact@zeyani.fr" className="flex items-center gap-3 text-cream/60 text-xs sm:text-sm hover:text-gold transition-colors">
                 <Mail className="h-4 w-4 text-gold flex-shrink-0" />
@@ -157,13 +155,13 @@ const Footer = () => {
               © {currentYear} ZEYANI. Tous droits réservés.
             </p>
             <div className="flex flex-wrap justify-center gap-4 sm:gap-6 text-xs sm:text-sm">
-              <Link to="/contact" className="text-cream/40 hover:text-gold transition-colors">
+              <Link to="/mentions-legales" className="text-cream/40 hover:text-gold transition-colors">
                 Mentions Légales
               </Link>
-              <Link to="/contact" className="text-cream/40 hover:text-gold transition-colors">
+              <Link to="/confidentialite" className="text-cream/40 hover:text-gold transition-colors">
                 Confidentialité
               </Link>
-              <Link to="/contact" className="text-cream/40 hover:text-gold transition-colors">
+              <Link to="/cgv" className="text-cream/40 hover:text-gold transition-colors">
                 CGV
               </Link>
             </div>
