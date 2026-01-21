@@ -91,6 +91,11 @@ const Product = () => {
       })
     : [];
 
+  // Image de la variante actuellement sélectionnée
+  const currentVariantImage = variantKey && product.variantImages?.[variantKey]?.[0] 
+    ? product.variantImages[variantKey][0] 
+    : null;
+
   const handleAddToCart = () => {
     const productToAdd = {
       ...product,
@@ -146,11 +151,11 @@ const Product = () => {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5 }}
             >
-              {/* Image principale - depuis l'onglet Images */}
+              {/* Image principale - affiche l'image de la variante sélectionnée ou l'image principale */}
               <div className="aspect-square bg-secondary rounded-lg overflow-hidden">
                 <motion.img
-                  key={`main-${product.images[0]}`}
-                  src={product.images[0]}
+                  key={`main-${variantKey}-${currentVariantImage || product.images[0]}`}
+                  src={currentVariantImage || product.images[0]}
                   alt={product.name}
                   className="w-full h-full object-cover"
                   initial={{ opacity: 0, scale: 1.05 }}
