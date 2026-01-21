@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Package, Calendar, CreditCard } from "lucide-react";
+import { ArrowLeft, Package, Calendar, CreditCard, Download } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import Header from "@/components/Header";
@@ -23,6 +23,13 @@ interface Order {
   items: unknown;
   created_at: string;
   received_at: string | null;
+  shipping_address: {
+    method?: {
+      type: string;
+      label: string;
+      price: number;
+    };
+  } | null;
 }
 
 const parseItems = (items: unknown): OrderItem[] => {
@@ -90,6 +97,228 @@ const OrderHistory = () => {
       cancelled: { text: "Annulée", color: "bg-red-100 text-red-800" },
     };
     return labels[status] || { text: status, color: "bg-gray-100 text-gray-800" };
+  };
+
+  const handleDownloadReceipt = (order: Order) => {
+    const items = parseItems(order.items);
+    const shippingMethod = order.shipping_address?.method || { type: "free", label: "Livraison gratuite", price: 0 };
+    const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
+
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) {
+      alert("Veuillez autoriser les popups pour télécharger le reçu.");
+      return;
+    }
+
+    const styles = `
+      <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+          padding: 40px; 
+          max-width: 800px; 
+          margin: 0 auto;
+          color: #1a1a1a;
+        }
+        .header { 
+          text-align: center; 
+          margin-bottom: 40px;
+          padding-bottom: 20px;
+          border-bottom: 2px solid #d4af37;
+        }
+        .logo { 
+          font-size: 28px; 
+          font-weight: bold; 
+          color: #d4af37;
+          font-family: 'Playfair Display', serif;
+          margin-bottom: 8px;
+        }
+        .subtitle { 
+          color: #666; 
+          font-size: 14px;
+        }
+        .receipt-title {
+          font-size: 24px;
+          margin: 30px 0 20px;
+          color: #1a1a1a;
+        }
+        .info-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 20px;
+          margin-bottom: 30px;
+        }
+        .info-box {
+          background: #f9f9f9;
+          padding: 15px;
+          border-radius: 8px;
+        }
+        .info-label {
+          font-size: 12px;
+          color: #666;
+          text-transform: uppercase;
+          margin-bottom: 5px;
+        }
+        .info-value {
+          font-size: 14px;
+          font-weight: 500;
+        }
+        .items-table {
+          width: 100%;
+          border-collapse: collapse;
+          margin: 20px 0;
+        }
+        .items-table th {
+          text-align: left;
+          padding: 12px 0;
+          border-bottom: 2px solid #e5e5e5;
+          font-size: 12px;
+          text-transform: uppercase;
+          color: #666;
+        }
+        .items-table td {
+          padding: 15px 0;
+          border-bottom: 1px solid #f0f0f0;
+        }
+        .items-table .name { font-weight: 500; }
+        .items-table .qty { text-align: center; color: #666; }
+        .items-table .price { text-align: right; }
+        .totals {
+          margin-top: 20px;
+          padding-top: 20px;
+        }
+        .total-row {
+          display: flex;
+          justify-content: space-between;
+          padding: 8px 0;
+        }
+        .total-row.final {
+          font-size: 18px;
+          font-weight: bold;
+          padding-top: 15px;
+          margin-top: 10px;
+          border-top: 2px solid #d4af37;
+        }
+        .footer {
+          margin-top: 50px;
+          padding-top: 30px;
+          border-top: 1px solid #e5e5e5;
+          text-align: center;
+          color: #888;
+          font-size: 12px;
+        }
+        .footer p { margin: 5px 0; }
+        .legal {
+          margin-top: 30px;
+          padding: 15px;
+          background: #f9f9f9;
+          border-radius: 8px;
+          font-size: 11px;
+          color: #666;
+        }
+        @media print {
+          body { padding: 20px; }
+        }
+      </style>
+    `;
+
+    const content = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Reçu - Niger Chic Designs - ${order.paypal_order_id}</title>
+          <meta charset="utf-8">
+          ${styles}
+        </head>
+        <body>
+          <div class="header">
+            <div class="logo">Niger Chic Designs</div>
+            <div class="subtitle">Bijoux artisanaux touaregs</div>
+          </div>
+
+          <h1 class="receipt-title">Reçu de commande</h1>
+
+          <div class="info-grid">
+            <div class="info-box">
+              <div class="info-label">Numéro de commande</div>
+              <div class="info-value">${order.paypal_order_id}</div>
+            </div>
+            <div class="info-box">
+              <div class="info-label">Date de commande</div>
+              <div class="info-value">${format(new Date(order.created_at), "d MMMM yyyy 'à' HH:mm", { locale: fr })}</div>
+            </div>
+            <div class="info-box">
+              <div class="info-label">Mode de paiement</div>
+              <div class="info-value">PayPal</div>
+            </div>
+            <div class="info-box">
+              <div class="info-label">Livraison</div>
+              <div class="info-value">${shippingMethod.label}</div>
+            </div>
+          </div>
+
+          <h2 style="font-size: 16px; margin: 30px 0 15px; color: #666;">Articles commandés</h2>
+          
+          <table class="items-table">
+            <thead>
+              <tr>
+                <th>Article</th>
+                <th style="text-align: center;">Qté</th>
+                <th style="text-align: right;">Prix unitaire</th>
+                <th style="text-align: right;">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${items.map(item => `
+                <tr>
+                  <td class="name">${item.name}</td>
+                  <td class="qty">${item.quantity}</td>
+                  <td class="price">${item.price.toFixed(2)} €</td>
+                  <td class="price">${(item.price * item.quantity).toFixed(2)} €</td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+
+          <div class="totals">
+            <div class="total-row">
+              <span>Sous-total (${totalItems} article${totalItems > 1 ? "s" : ""})</span>
+              <span>${subtotal.toFixed(2)} €</span>
+            </div>
+            <div class="total-row">
+              <span>Frais de livraison (${shippingMethod.label})</span>
+              <span>${shippingMethod.price === 0 ? "Gratuit" : shippingMethod.price.toFixed(2) + " €"}</span>
+            </div>
+            <div class="total-row final">
+              <span>TOTAL TTC</span>
+              <span>${order.total_amount.toFixed(2)} €</span>
+            </div>
+          </div>
+
+          <div class="legal">
+            <p><strong>Informations légales</strong></p>
+            <p>Ce reçu fait foi de votre achat auprès de Niger Chic Designs.</p>
+            <p>Conformément au RGPD, vos données personnelles sont conservées pendant 3 ans après réception de votre commande.</p>
+            <p>Pour toute question concernant votre commande, contactez-nous via notre formulaire de contact.</p>
+          </div>
+
+          <div class="footer">
+            <p><strong>Niger Chic Designs</strong></p>
+            <p>Bijoux artisanaux touaregs - Fait main au Niger</p>
+            <p>www.niger-chic-designs.lovable.app</p>
+            <p style="margin-top: 15px;">Merci pour votre confiance !</p>
+          </div>
+        </body>
+      </html>
+    `;
+
+    printWindow.document.write(content);
+    printWindow.document.close();
+    
+    printWindow.onload = () => {
+      printWindow.print();
+    };
   };
 
   return (
@@ -162,14 +391,24 @@ const OrderHistory = () => {
                     ))}
                   </div>
 
-                  <div className="border-t pt-4 flex items-center justify-between">
+                  <div className="border-t pt-4 flex flex-wrap items-center justify-between gap-4">
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <CreditCard className="h-4 w-4" />
                       PayPal
                     </div>
-                    <p className="text-lg font-semibold">
-                      Total: {order.total_amount.toFixed(2)} {order.currency}
-                    </p>
+                    <div className="flex items-center gap-4">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDownloadReceipt(order)}
+                      >
+                        <Download className="h-4 w-4 mr-2" />
+                        Télécharger le reçu
+                      </Button>
+                      <p className="text-lg font-semibold">
+                        Total: {order.total_amount.toFixed(2)} {order.currency}
+                      </p>
+                    </div>
                   </div>
 
                   {order.received_at && (
