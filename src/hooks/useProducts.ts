@@ -2,53 +2,6 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { DbProduct } from '@/types/product';
 
-// Import local images
-import croixAgadez1 from '@/assets/croix-agadez-1.jpg';
-import croixAgadez2 from '@/assets/croix-agadez-2.jpg';
-import croixAgadez3 from '@/assets/croix-agadez-3.jpg';
-import croixAgadezChaineDore from '@/assets/croix-agadez-chaine-dore.jpg';
-import croixAgadezChaineArgente from '@/assets/croix-agadez-chaine-argente.jpg';
-import croixAgadezChaineDore2 from '@/assets/croix-agadez-chaine-dore-2.jpg';
-import croixAgadezChaineArgente2 from '@/assets/croix-agadez-chaine-argente-2.jpg';
-import croixAgadezPerleDore from '@/assets/croix-agadez-perle-dore.jpg';
-import croixAgadezPerleArgente from '@/assets/croix-agadez-perle-argente.jpg';
-import croixTahoua from '@/assets/croix-tahoua.jpg';
-import croixIfe from '@/assets/croix-ife.jpg';
-import croixIna from '@/assets/croix-ina.jpg';
-import croixZinda from '@/assets/croix-zinda.jpg';
-import croixInwagar from '@/assets/croix-inwagar.jpg';
-import braceletTuareg from '@/assets/bracelet-tuareg.jpg';
-import bracelet1 from '@/assets/bracelet-1.jpg';
-import ring1 from '@/assets/ring-1.jpg';
-import necklace1 from '@/assets/necklace-1.jpg';
-
-// Map slugs to local images - using exact DB slugs
-const localImageMap: Record<string, string[]> = {
-  // Colliers
-  'collier-croix-agadez': [croixAgadez1, croixAgadez2, croixAgadez3],
-  'collier-croix-tahoua': [croixTahoua, necklace1],
-  'collier-croix-ife': [croixIfe],
-  'collier-croix-ina': [croixIna],
-  'collier-croix-zinda': [croixZinda],
-  'collier-croix-inwagar': [croixInwagar],
-  // Bracelets
-  'bracelet-touareg-traditionnel': [braceletTuareg],
-  'bracelet-touareg-luxe': [bracelet1],
-  // Bagues
-  'bague-touareg-gravee': [ring1],
-};
-
-// Map for variant images (multiple images per variant)
-// Keys are in format: "type-color" where type is "chain" or "bead" and color is "dore" or "argente"
-const variantImageMap: Record<string, Record<string, string[]>> = {
-  'collier-croix-agadez': {
-    'chain-dore': [croixAgadezChaineDore, croixAgadezChaineDore2],
-    'chain-argente': [croixAgadezChaineArgente, croixAgadezChaineArgente2],
-    'bead-dore': [croixAgadezPerleDore],
-    'bead-argente': [croixAgadezPerleArgente],
-  },
-};
-
 export interface Product {
   id: string;
   slug: string;
@@ -70,16 +23,11 @@ export interface Product {
   variantImages?: Record<string, string[]>;
 }
 
-// Build variant images from DB variants
+// Build variant images from DB variants only (uses admin-uploaded images)
 const buildVariantImages = (dbProduct: DbProduct): Record<string, string[]> => {
   const variantImages: Record<string, string[]> = {};
   
-  // First check if we have local images for this product
-  if (variantImageMap[dbProduct.slug]) {
-    return variantImageMap[dbProduct.slug];
-  }
-  
-  // Build from DB variants
+  // Build from DB variants only - no local overrides
   if (dbProduct.variants && Array.isArray(dbProduct.variants)) {
     dbProduct.variants.forEach((variant: any) => {
       if (variant.type && variant.color && variant.image) {
@@ -97,8 +45,8 @@ const buildVariantImages = (dbProduct: DbProduct): Record<string, string[]> => {
 
 // Transform DB product to frontend format
 const transformProduct = (dbProduct: DbProduct): Product => {
-  const localImages = localImageMap[dbProduct.slug] || [];
-  const images = localImages.length > 0 ? localImages : (dbProduct.images?.length ? dbProduct.images : ['/placeholder.svg']);
+  // Use only images from DB - no local overrides
+  const images = dbProduct.images?.length ? dbProduct.images : ['/placeholder.svg'];
   
   return {
     id: dbProduct.id,
