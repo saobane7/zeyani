@@ -57,6 +57,17 @@ interface ProductFormProps {
   isSubmitting: boolean;
 }
 
+// Types and colors for necklace variants
+const VARIANT_TYPES = [
+  { value: 'chain', label: 'Chaîne' },
+  { value: 'bead', label: 'Perles' },
+] as const;
+
+const VARIANT_COLORS = [
+  { value: 'argente', label: 'Argenté' },
+  { value: 'dore', label: 'Doré' },
+] as const;
+
 export const ProductForm = ({ initialData, onSubmit, isSubmitting }: ProductFormProps) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [images, setImages] = useState<string[]>(initialData?.images || []);
@@ -186,13 +197,34 @@ export const ProductForm = ({ initialData, onSubmit, isSubmitting }: ProductForm
     setImages(images.filter((_, i) => i !== index));
   };
 
+  // Generate all 4 variants for necklaces
+  const generateNecklaceVariants = () => {
+    const newVariants: ProductVariant[] = [];
+    for (const type of VARIANT_TYPES) {
+      for (const color of VARIANT_COLORS) {
+        // Check if this variant already exists
+        const exists = variants.some(v => v.type === type.value && v.color === color.value);
+        if (!exists) {
+          newVariants.push({
+            id: crypto.randomUUID(),
+            type: type.value as 'chain' | 'bead',
+            color: color.value as 'argente' | 'dore',
+            price: 0,
+            label: `${type.label} ${color.label}`,
+          });
+        }
+      }
+    }
+    setVariants([...variants, ...newVariants]);
+  };
+
   const addVariant = () => {
     const newVariant: ProductVariant = {
       id: crypto.randomUUID(),
       type: 'chain',
       color: 'argente',
       price: 0,
-      label: '',
+      label: 'Chaîne Argenté',
     };
     setVariants([...variants, newVariant]);
   };
@@ -204,8 +236,8 @@ export const ProductForm = ({ initialData, onSubmit, isSubmitting }: ProductForm
     if (field === 'type' || field === 'color') {
       const type = field === 'type' ? value : updated[index].type;
       const color = field === 'color' ? value : updated[index].color;
-      const typeLabel = type === 'chain' ? 'Chaîne' : 'Perles';
-      const colorLabel = color === 'argente' ? 'Argenté' : 'Doré';
+      const typeLabel = VARIANT_TYPES.find(t => t.value === type)?.label || type;
+      const colorLabel = VARIANT_COLORS.find(c => c.value === color)?.label || color;
       updated[index].label = `${typeLabel} ${colorLabel}`;
     }
     setVariants(updated);
@@ -541,115 +573,187 @@ export const ProductForm = ({ initialData, onSubmit, isSubmitting }: ProductForm
         <TabsContent value="variants" className="space-y-6 mt-6">
           <Card>
             <CardHeader>
-              <CardTitle>Variantes du produit</CardTitle>
-              <CardDescription>Configurez les différentes versions du produit</CardDescription>
+              <CardTitle>Variantes du produit (Type + Couleur)</CardTitle>
+              <CardDescription>
+                {category === 'colliers' 
+                  ? 'Pour les colliers: Chaîne ou Perles, en Doré ou Argenté. Chaque combinaison doit avoir sa propre image.'
+                  : 'Configurez les différentes versions du produit avec une image pour chaque variante'}
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {variants.map((variant, index) => (
-                <div key={variant.id} className="p-4 border rounded-lg space-y-4">
-                  <div className="flex items-end gap-4">
-                    <div className="flex-1 space-y-2">
-                      <Label>Type</Label>
-                      <Select
-                        value={variant.type}
-                        onValueChange={(value) => updateVariant(index, 'type', value)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="chain">Chaîne</SelectItem>
-                          <SelectItem value="bead">Perles</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="flex-1 space-y-2">
-                      <Label>Couleur</Label>
-                      <Select
-                        value={variant.color}
-                        onValueChange={(value) => updateVariant(index, 'color', value)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="argente">Argenté</SelectItem>
-                          <SelectItem value="dore">Doré</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="flex-1 space-y-2">
-                      <Label>Label</Label>
-                      <Input
-                        value={variant.label}
-                        onChange={(e) => updateVariant(index, 'label', e.target.value)}
-                        placeholder="Chaîne Argenté"
-                      />
-                    </div>
-                    <div className="w-32 space-y-2">
-                      <Label>Prix (€)</Label>
-                      <Input
-                        type="number"
-                        value={variant.price}
-                        onChange={(e) => updateVariant(index, 'price', parseFloat(e.target.value) || 0)}
-                      />
-                    </div>
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="icon"
-                      onClick={() => removeVariant(index)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  
-                  {/* Variant Image Upload */}
-                  <div className="flex items-center gap-4 pt-2 border-t">
-                    <div className="flex-shrink-0">
-                      {variant.image ? (
-                        <div className="relative group">
-                          <img
-                            src={variant.image}
-                            alt={`${variant.label} variant`}
-                            className="w-20 h-20 object-cover rounded-lg border"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => removeVariantImage(index)}
-                            className="absolute -top-2 -right-2 p-1 bg-destructive text-destructive-foreground rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                          >
-                            <X className="h-3 w-3" />
-                          </button>
-                        </div>
-                      ) : (
-                        <label className="flex flex-col items-center justify-center w-20 h-20 border-2 border-dashed border-muted-foreground/25 rounded-lg cursor-pointer hover:border-primary/50 transition-colors">
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={(e) => handleVariantImageUpload(variant.id, e)}
-                            className="hidden"
-                            disabled={uploadingVariantImage === variant.id}
-                          />
-                          {uploadingVariantImage === variant.id ? (
-                            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-                          ) : (
-                            <Upload className="h-5 w-5 text-muted-foreground" />
-                          )}
-                        </label>
-                      )}
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      <p className="font-medium">Image pour: {variant.label || `${variant.type === 'chain' ? 'Chaîne' : 'Perles'} ${variant.color === 'argente' ? 'Argenté' : 'Doré'}`}</p>
-                      <p>Cette image sera affichée quand le client sélectionne cette variante</p>
-                    </div>
-                  </div>
+              {/* Quick action for necklaces */}
+              {category === 'colliers' && variants.length < 4 && (
+                <div className="p-4 bg-muted/50 rounded-lg border border-dashed">
+                  <p className="text-sm text-muted-foreground mb-3">
+                    <strong>Colliers :</strong> Vous devez créer 4 variantes (Chaîne Argenté, Chaîne Doré, Perles Argenté, Perles Doré) avec une image pour chacune.
+                  </p>
+                  <Button type="button" variant="secondary" onClick={generateNecklaceVariants}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Générer les 4 variantes
+                  </Button>
                 </div>
-              ))}
-              <Button type="button" variant="outline" onClick={addVariant}>
-                <Plus className="h-4 w-4 mr-2" />
-                Ajouter une variante
-              </Button>
+              )}
+
+              {variants.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <p>Aucune variante configurée</p>
+                  <p className="text-sm">Ajoutez des variantes pour permettre aux clients de choisir le type et la couleur</p>
+                </div>
+              ) : (
+                <div className="grid gap-4">
+                  {variants.map((variant, index) => (
+                    <div key={variant.id} className="p-4 border rounded-lg space-y-4 bg-card">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-lg font-semibold">
+                          {variant.label || `${VARIANT_TYPES.find(t => t.value === variant.type)?.label} ${VARIANT_COLORS.find(c => c.value === variant.color)?.label}`}
+                        </span>
+                        {!variant.image && (
+                          <span className="text-xs bg-destructive/10 text-destructive px-2 py-1 rounded-full">
+                            Image requise
+                          </span>
+                        )}
+                      </div>
+                      
+                      <div className="flex items-start gap-6">
+                        {/* Image Upload - More prominent */}
+                        <div className="flex-shrink-0">
+                          {variant.image ? (
+                            <div className="relative group">
+                              <img
+                                src={variant.image}
+                                alt={`${variant.label} variant`}
+                                className="w-32 h-32 object-cover rounded-lg border-2 border-primary/20"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => removeVariantImage(index)}
+                                className="absolute -top-2 -right-2 p-1.5 bg-destructive text-destructive-foreground rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                              >
+                                <X className="h-4 w-4" />
+                              </button>
+                              <span className="absolute bottom-1 left-1 right-1 text-xs bg-black/60 text-white px-2 py-1 rounded text-center">
+                                ✓ Image OK
+                              </span>
+                            </div>
+                          ) : (
+                            <label className="flex flex-col items-center justify-center w-32 h-32 border-2 border-dashed border-destructive/50 rounded-lg cursor-pointer hover:border-primary transition-colors bg-destructive/5">
+                              <input
+                                type="file"
+                                accept="image/*"
+                                onChange={(e) => handleVariantImageUpload(variant.id, e)}
+                                className="hidden"
+                                disabled={uploadingVariantImage === variant.id}
+                              />
+                              {uploadingVariantImage === variant.id ? (
+                                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                              ) : (
+                                <>
+                                  <Upload className="h-8 w-8 text-destructive mb-2" />
+                                  <span className="text-xs text-destructive font-medium text-center px-2">
+                                    Ajouter l'image
+                                  </span>
+                                </>
+                              )}
+                            </label>
+                          )}
+                        </div>
+                        
+                        {/* Variant details */}
+                        <div className="flex-1 space-y-3">
+                          <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-1">
+                              <Label className="text-xs">Type de collier</Label>
+                              <Select
+                                value={variant.type}
+                                onValueChange={(value) => updateVariant(index, 'type', value)}
+                              >
+                                <SelectTrigger className="h-9">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {VARIANT_TYPES.map((type) => (
+                                    <SelectItem key={type.value} value={type.value}>
+                                      {type.label}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-xs">Couleur</Label>
+                              <Select
+                                value={variant.color}
+                                onValueChange={(value) => updateVariant(index, 'color', value)}
+                              >
+                                <SelectTrigger className="h-9">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {VARIANT_COLORS.map((color) => (
+                                    <SelectItem key={color.value} value={color.value}>
+                                      <span className="flex items-center gap-2">
+                                        <span 
+                                          className="w-3 h-3 rounded-full border" 
+                                          style={{ backgroundColor: color.value === 'dore' ? '#D4AF37' : '#C0C0C0' }}
+                                        />
+                                        {color.label}
+                                      </span>
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+                          
+                          <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-1">
+                              <Label className="text-xs">Label affiché</Label>
+                              <Input
+                                value={variant.label}
+                                onChange={(e) => updateVariant(index, 'label', e.target.value)}
+                                placeholder="Chaîne Argenté"
+                                className="h-9"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-xs">Supplément prix (€)</Label>
+                              <Input
+                                type="number"
+                                value={variant.price}
+                                onChange={(e) => updateVariant(index, 'price', parseFloat(e.target.value) || 0)}
+                                className="h-9"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => removeVariant(index)}
+                          className="text-muted-foreground hover:text-destructive"
+                        >
+                          <X className="h-5 w-5" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              <div className="flex gap-2 pt-2">
+                <Button type="button" variant="outline" onClick={addVariant}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Ajouter une variante
+                </Button>
+                {category === 'colliers' && variants.length > 0 && variants.length < 4 && (
+                  <Button type="button" variant="secondary" onClick={generateNecklaceVariants}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Compléter les variantes manquantes
+                  </Button>
+                )}
+              </div>
             </CardContent>
           </Card>
 
