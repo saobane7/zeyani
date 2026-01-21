@@ -69,15 +69,27 @@ const Product = () => {
 
   const currentPrice = selectedVariant ? selectedVariant.price : product.price;
 
-  // Construire la clé de variante pour chercher les images
-  const variantKey = selectedVariant 
-    ? `${selectedType === 'chain' ? 'chaine' : 'perle'}-${selectedColor}`
-    : null;
+  // Construire la clé de variante pour chercher les images (format: "type-color")
+  const variantKey = product.hasVariants ? `${selectedType}-${selectedColor}` : null;
 
   // Obtenir les images à afficher (variantes si disponibles, sinon images par défaut)
   const displayImages = variantKey && product.variantImages?.[variantKey]?.length 
     ? product.variantImages[variantKey]
     : product.images;
+
+  // Collecter toutes les images de variantes pour les miniatures
+  const allVariantImages = product.hasVariants && product.variantImages 
+    ? Object.entries(product.variantImages).map(([key, images]) => {
+        const [type, color] = key.split('-');
+        return {
+          key,
+          type: type as 'chain' | 'bead',
+          color: color as 'dore' | 'argente',
+          image: images[0],
+          label: `${type === 'chain' ? 'Chaîne' : 'Perles'} ${color === 'dore' ? 'Doré' : 'Argenté'}`
+        };
+      })
+    : [];
 
   const handleAddToCart = () => {
     const productToAdd = {
@@ -145,6 +157,7 @@ const Product = () => {
                   transition={{ duration: 0.4 }}
                 />
               </div>
+              {/* Thumbnails for current variant images */}
               {displayImages.length > 1 && (
                 <div className="flex gap-2 sm:gap-3 overflow-x-auto pb-2">
                   {displayImages.map((img, idx) => (
@@ -158,6 +171,37 @@ const Product = () => {
                       <img src={img} alt="" className="w-full h-full object-cover" />
                     </button>
                   ))}
+                </div>
+              )}
+
+              {/* Variant thumbnails - click to switch variant */}
+              {allVariantImages.length > 1 && (
+                <div className="mt-4">
+                  <p className="text-xs text-muted-foreground mb-2">Aperçu des variantes :</p>
+                  <div className="flex gap-2 sm:gap-3 overflow-x-auto pb-2">
+                    {allVariantImages.map((variant) => (
+                      <button
+                        key={variant.key}
+                        onClick={() => {
+                          setSelectedType(variant.type);
+                          setSelectedColor(variant.color);
+                          setSelectedImage(0);
+                        }}
+                        className={`flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden border-2 transition-all relative group ${
+                          variantKey === variant.key 
+                            ? "border-gold ring-2 ring-gold/30" 
+                            : "border-border hover:border-gold/50"
+                        }`}
+                        title={variant.label}
+                      >
+                        <img src={variant.image} alt={variant.label} className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
+                        <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-[8px] sm:text-[10px] py-0.5 text-center truncate">
+                          {variant.type === 'chain' ? 'Chaîne' : 'Perles'} {variant.color === 'dore' ? '🟡' : '⚪'}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
                 </div>
               )}
             </motion.div>
