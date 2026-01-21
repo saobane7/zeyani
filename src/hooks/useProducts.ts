@@ -20,23 +20,27 @@ import croixInwagar from '@/assets/croix-inwagar.jpg';
 import braceletTuareg from '@/assets/bracelet-tuareg.jpg';
 import bracelet1 from '@/assets/bracelet-1.jpg';
 import ring1 from '@/assets/ring-1.jpg';
+import necklace1 from '@/assets/necklace-1.jpg';
 
-// Map slugs to local images
+// Map slugs to local images - using exact DB slugs
 const localImageMap: Record<string, string[]> = {
-  'croix-agadez': [croixAgadez1, croixAgadez2, croixAgadez3],
-  'croix-tahoua': [croixTahoua],
-  'croix-ife': [croixIfe],
-  'croix-ina': [croixIna],
-  'croix-zinda': [croixZinda],
-  'croix-inwagar': [croixInwagar],
+  // Colliers
+  'collier-croix-agadez': [croixAgadez1, croixAgadez2, croixAgadez3],
+  'collier-croix-tahoua': [croixTahoua, necklace1],
+  'collier-croix-ife': [croixIfe],
+  'collier-croix-ina': [croixIna],
+  'collier-croix-zinda': [croixZinda],
+  'collier-croix-inwagar': [croixInwagar],
+  // Bracelets
   'bracelet-touareg-traditionnel': [braceletTuareg],
   'bracelet-touareg-luxe': [bracelet1],
+  // Bagues
   'bague-touareg-gravee': [ring1],
 };
 
 // Map for variant images (multiple images per variant)
 const variantImageMap: Record<string, Record<string, string[]>> = {
-  'croix-agadez': {
+  'collier-croix-agadez': {
     'Chaîne-Doré': [croixAgadezChaineDore, croixAgadezChaineDore2],
     'Chaîne-Argenté': [croixAgadezChaineArgente, croixAgadezChaineArgente2],
     'Perles-Doré': [croixAgadezPerleDore],
