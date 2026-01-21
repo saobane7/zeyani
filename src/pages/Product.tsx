@@ -415,11 +415,11 @@ const Product = () => {
                 </div>
                 <div className="text-center">
                   <Shield className="h-5 w-5 sm:h-6 sm:w-6 mx-auto mb-1 sm:mb-2 text-gold-dark" />
-                  <p className="text-[10px] sm:text-xs text-muted-foreground">Paiement<br />sécurisé</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground">Garantie<br />2 mois</p>
                 </div>
                 <div className="text-center">
                   <RotateCcw className="h-5 w-5 sm:h-6 sm:w-6 mx-auto mb-1 sm:mb-2 text-gold-dark" />
-                  <p className="text-[10px] sm:text-xs text-muted-foreground">Retour sous<br />30 jours</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground">Retour sous<br />14 jours</p>
                 </div>
               </div>
             </motion.div>
