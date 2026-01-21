@@ -66,6 +66,7 @@ const PayPalButton = ({ onSuccess, onError, disabled = false, shippingOption }: 
 
   useEffect(() => {
     if (!scriptLoaded || !window.paypal || !paypalRef.current || disabled) return;
+    if (items.length === 0) return;
 
     // Clear previous buttons
     paypalRef.current.innerHTML = "";
@@ -89,24 +90,36 @@ const PayPalButton = ({ onSuccess, onError, disabled = false, shippingOption }: 
                 value: item.product.price.toString(),
               },
             })),
-            {
+            ...(shippingOption.price > 0 ? [{
               name: `Livraison - ${shippingOption.label}`,
               quantity: 1,
               unit_amount: {
                 value: shippingOption.price.toString(),
               },
-            },
+            }] : []),
           ];
+
+          const requestBody = {
+            items: orderItems,
+            totalAmount: finalTotal,
+          };
+
+          console.log("Creating PayPal order with:", requestBody);
 
           // Validate order on backend first
           const { data, error } = await supabase.functions.invoke("create-paypal-order", {
-            body: {
-              items: orderItems,
-              totalAmount: finalTotal,
-            },
+            body: requestBody,
           });
 
-          if (error || !data?.success) {
+          console.log("Backend response:", data, error);
+
+          if (error) {
+            console.error("Backend error:", error);
+            throw new Error("Erreur de validation backend");
+          }
+
+          if (!data?.success) {
+            console.error("Backend validation failed:", data?.error);
             throw new Error(data?.error || "Erreur de validation");
           }
 
@@ -114,7 +127,7 @@ const PayPalButton = ({ onSuccess, onError, disabled = false, shippingOption }: 
           return actions.order.create(data.orderData);
         } catch (err: any) {
           console.error("Create order error:", err);
-          toast.error("Erreur lors de la création de la commande");
+          toast.error(err.message || "Erreur lors de la création de la commande");
           throw err;
         }
       },
@@ -123,6 +136,8 @@ const PayPalButton = ({ onSuccess, onError, disabled = false, shippingOption }: 
           // Capture the order
           const orderDetails = await actions.order.capture();
           
+          console.log("Order captured:", orderDetails);
+
           // Store in backend with shipping info
           const { error } = await supabase.functions.invoke("capture-paypal-order", {
             body: {
@@ -158,8 +173,8 @@ const PayPalButton = ({ onSuccess, onError, disabled = false, shippingOption }: 
         }
       },
       onError: (err: any) => {
-        console.error("PayPal error:", err);
-        onError("Une erreur est survenue avec PayPal");
+        console.error("PayPal SDK error:", err);
+        onError("Une erreur est survenue avec PayPal. Veuillez réessayer.");
       },
       onCancel: () => {
         toast.info("Paiement annulé");

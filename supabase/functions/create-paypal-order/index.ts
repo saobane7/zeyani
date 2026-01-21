@@ -6,12 +6,26 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  // Handle CORS preflight
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { items, totalAmount } = await req.json();
+    // Safely parse request body
+    let body;
+    try {
+      const text = await req.text();
+      if (!text || text.trim() === "") {
+        throw new Error("Request body is empty");
+      }
+      body = JSON.parse(text);
+    } catch (parseError) {
+      console.error("JSON parse error:", parseError);
+      throw new Error("Invalid request body - JSON parsing failed");
+    }
+
+    const { items, totalAmount } = body;
 
     if (!items || !Array.isArray(items) || items.length === 0) {
       throw new Error("Items invalides");
