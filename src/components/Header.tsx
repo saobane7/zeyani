@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Search, User, LogOut, Package } from "lucide-react";
+import { Menu, X, User, LogOut, Package } from "lucide-react";
 import { Button } from "./ui/button";
 import CartSheet from "./CartSheet";
+import SearchCommand from "./SearchCommand";
 import { useAuth } from "@/hooks/useAuth";
 import {
   DropdownMenu,
@@ -114,15 +115,9 @@ const Header = () => {
 
           {/* Right side */}
           <div className="flex items-center gap-2 sm:gap-4">
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className={`hidden lg:flex transition-colors ${
-                isScrolled ? "" : "text-cream hover:bg-cream/10"
-              }`}
-            >
-              <Search className="h-5 w-5" />
-            </Button>
+            <div className="hidden lg:flex">
+              <SearchCommand isScrolled={isScrolled} />
+            </div>
 
             {/* User account dropdown */}
             {user ? (
@@ -213,6 +208,16 @@ const Header = () => {
             className="lg:hidden bg-background border-b border-border overflow-hidden"
           >
             <nav className="container mx-auto px-4 py-6 flex flex-col gap-1">
+              {/* Mobile Search */}
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.3, delay: 0 }}
+                className="mb-4"
+              >
+                <SearchCommand isScrolled={true} />
+              </motion.div>
+              
               {navLinks.map((link, index) => (
                 <motion.div
                   key={link.name}
