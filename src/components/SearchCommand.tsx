@@ -1,14 +1,7 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search, X } from "lucide-react";
-import {
-  CommandDialog,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useProducts } from "@/hooks/useProducts";
 import { formatPrice } from "@/hooks/useProducts";
 
@@ -19,8 +12,16 @@ interface SearchCommandProps {
 const SearchCommand = ({ isScrolled = false }: SearchCommandProps) => {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const { data: products, isLoading } = useProducts();
+
+  // Focus input when dialog opens
+  useEffect(() => {
+    if (open && inputRef.current) {
+      setTimeout(() => inputRef.current?.focus(), 100);
+    }
+  }, [open]);
 
   // Open with keyboard shortcut
   useEffect(() => {
@@ -36,6 +37,7 @@ const SearchCommand = ({ isScrolled = false }: SearchCommandProps) => {
   }, []);
 
   const filteredProducts = products?.filter((product) => {
+    if (!search) return false;
     const searchLower = search.toLowerCase();
     return (
       product.name.toLowerCase().includes(searchLower) ||
@@ -58,11 +60,22 @@ const SearchCommand = ({ isScrolled = false }: SearchCommandProps) => {
     }
   };
 
+  const handleButtonClick = () => {
+    console.log("Search button clicked");
+    setOpen(true);
+  };
+
+  // Group products by category
+  const colliers = filteredProducts?.filter(p => p.category === "colliers") || [];
+  const bracelets = filteredProducts?.filter(p => p.category === "bracelets") || [];
+  const autres = filteredProducts?.filter(p => !["colliers", "bracelets"].includes(p.category)) || [];
+
   return (
     <>
       <button
-        onClick={() => setOpen(true)}
-        className={`flex items-center justify-center h-10 w-10 rounded-md transition-colors ${
+        type="button"
+        onClick={handleButtonClick}
+        className={`flex items-center justify-center h-10 w-10 rounded-md transition-colors cursor-pointer ${
           isScrolled 
             ? "hover:bg-muted" 
             : "text-cream hover:bg-cream/10"
@@ -72,55 +85,59 @@ const SearchCommand = ({ isScrolled = false }: SearchCommandProps) => {
         <Search className="h-5 w-5" />
       </button>
 
-      <CommandDialog open={open} onOpenChange={handleOpenChange}>
-        <div className="flex items-center border-b px-3">
-          <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
-          <input
-            className="flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
-            placeholder="Rechercher un produit..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-          {search && (
-            <button
-              onClick={() => setSearch("")}
-              className="p-1 hover:bg-muted rounded"
-            >
-              <X className="h-4 w-4 opacity-50" />
-            </button>
-          )}
-        </div>
-        <CommandList>
-          {isLoading ? (
-            <div className="py-6 text-center text-sm text-muted-foreground">
-              Chargement...
-            </div>
-          ) : search.length === 0 ? (
-            <div className="py-6 text-center text-sm text-muted-foreground">
-              Tapez pour rechercher parmi nos produits...
-            </div>
-          ) : filteredProducts?.length === 0 ? (
-            <CommandEmpty>
-              <div className="flex flex-col items-center gap-2 py-4">
-                <p>Aucun produit trouvé pour "{search}"</p>
-                <p className="text-xs text-muted-foreground">
+      <Dialog open={open} onOpenChange={handleOpenChange}>
+        <DialogContent className="sm:max-w-[500px] p-0 gap-0 overflow-hidden">
+          <div className="flex items-center border-b px-4 py-3">
+            <Search className="mr-3 h-5 w-5 shrink-0 text-muted-foreground" />
+            <input
+              ref={inputRef}
+              className="flex h-8 w-full bg-transparent text-base outline-none placeholder:text-muted-foreground"
+              placeholder="Rechercher un produit..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              autoFocus
+            />
+            {search && (
+              <button
+                type="button"
+                onClick={() => setSearch("")}
+                className="p-1.5 hover:bg-muted rounded-md ml-2"
+              >
+                <X className="h-4 w-4 text-muted-foreground" />
+              </button>
+            )}
+          </div>
+          
+          <div className="max-h-[400px] overflow-y-auto">
+            {isLoading ? (
+              <div className="py-8 text-center text-sm text-muted-foreground">
+                Chargement...
+              </div>
+            ) : !search ? (
+              <div className="py-8 text-center text-sm text-muted-foreground">
+                Tapez pour rechercher parmi nos produits...
+              </div>
+            ) : filteredProducts?.length === 0 ? (
+              <div className="py-8 text-center">
+                <p className="text-sm text-muted-foreground">Aucun produit trouvé pour "{search}"</p>
+                <p className="text-xs text-muted-foreground mt-1">
                   Essayez avec un autre terme de recherche
                 </p>
               </div>
-            </CommandEmpty>
-          ) : (
-            <>
-              {/* Colliers */}
-              {filteredProducts?.filter(p => p.category === "colliers").length > 0 && (
-                <CommandGroup heading="Colliers">
-                  {filteredProducts
-                    .filter(p => p.category === "colliers")
-                    .map((product) => (
-                      <CommandItem
+            ) : (
+              <div className="py-2">
+                {/* Colliers */}
+                {colliers.length > 0 && (
+                  <div>
+                    <div className="px-4 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                      Colliers
+                    </div>
+                    {colliers.map((product) => (
+                      <button
                         key={product.id}
-                        value={product.name}
-                        onSelect={() => handleSelect(product.slug)}
-                        className="flex items-center gap-3 py-3 cursor-pointer"
+                        type="button"
+                        onClick={() => handleSelect(product.slug)}
+                        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-muted transition-colors cursor-pointer text-left"
                       >
                         <div className="h-12 w-12 rounded-md overflow-hidden bg-muted flex-shrink-0">
                           <img
@@ -138,22 +155,23 @@ const SearchCommand = ({ isScrolled = false }: SearchCommandProps) => {
                         <span className="text-sm font-semibold text-gold-dark">
                           {formatPrice(product.price)}
                         </span>
-                      </CommandItem>
+                      </button>
                     ))}
-                </CommandGroup>
-              )}
+                  </div>
+                )}
 
-              {/* Bracelets */}
-              {filteredProducts?.filter(p => p.category === "bracelets").length > 0 && (
-                <CommandGroup heading="Bracelets">
-                  {filteredProducts
-                    .filter(p => p.category === "bracelets")
-                    .map((product) => (
-                      <CommandItem
+                {/* Bracelets */}
+                {bracelets.length > 0 && (
+                  <div>
+                    <div className="px-4 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                      Bracelets
+                    </div>
+                    {bracelets.map((product) => (
+                      <button
                         key={product.id}
-                        value={product.name}
-                        onSelect={() => handleSelect(product.slug)}
-                        className="flex items-center gap-3 py-3 cursor-pointer"
+                        type="button"
+                        onClick={() => handleSelect(product.slug)}
+                        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-muted transition-colors cursor-pointer text-left"
                       >
                         <div className="h-12 w-12 rounded-md overflow-hidden bg-muted flex-shrink-0">
                           <img
@@ -171,22 +189,23 @@ const SearchCommand = ({ isScrolled = false }: SearchCommandProps) => {
                         <span className="text-sm font-semibold text-gold-dark">
                           {formatPrice(product.price)}
                         </span>
-                      </CommandItem>
+                      </button>
                     ))}
-                </CommandGroup>
-              )}
+                  </div>
+                )}
 
-              {/* Autres catégories */}
-              {filteredProducts?.filter(p => !["colliers", "bracelets"].includes(p.category)).length > 0 && (
-                <CommandGroup heading="Autres">
-                  {filteredProducts
-                    .filter(p => !["colliers", "bracelets"].includes(p.category))
-                    .map((product) => (
-                      <CommandItem
+                {/* Autres */}
+                {autres.length > 0 && (
+                  <div>
+                    <div className="px-4 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                      Autres
+                    </div>
+                    {autres.map((product) => (
+                      <button
                         key={product.id}
-                        value={product.name}
-                        onSelect={() => handleSelect(product.slug)}
-                        className="flex items-center gap-3 py-3 cursor-pointer"
+                        type="button"
+                        onClick={() => handleSelect(product.slug)}
+                        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-muted transition-colors cursor-pointer text-left"
                       >
                         <div className="h-12 w-12 rounded-md overflow-hidden bg-muted flex-shrink-0">
                           <img
@@ -204,21 +223,22 @@ const SearchCommand = ({ isScrolled = false }: SearchCommandProps) => {
                         <span className="text-sm font-semibold text-gold-dark">
                           {formatPrice(product.price)}
                         </span>
-                      </CommandItem>
+                      </button>
                     ))}
-                </CommandGroup>
-              )}
-            </>
-          )}
-        </CommandList>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
 
-        <div className="border-t p-2 text-center text-xs text-muted-foreground">
-          <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
-            <span className="text-xs">⌘</span>K
-          </kbd>
-          <span className="ml-2">pour ouvrir la recherche</span>
-        </div>
-      </CommandDialog>
+          <div className="border-t px-4 py-2 text-center text-xs text-muted-foreground bg-muted/30">
+            <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-background px-1.5 font-mono text-[10px] font-medium">
+              <span className="text-xs">⌘</span>K
+            </kbd>
+            <span className="ml-2">pour ouvrir la recherche</span>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };
