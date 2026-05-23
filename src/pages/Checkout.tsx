@@ -368,7 +368,7 @@ const Checkout = () => {
                 </TabsList>
                 <TabsContent value="wero">
                   <WeroPayment
-                    onSuccess={handleSuccess}
+                    onSuccess={(id) => handleSuccess(id, "wero")}
                     shippingOption={SHIPPING_OPTIONS[selectedShipping]}
                   />
                 </TabsContent>
