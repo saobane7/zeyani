@@ -73,9 +73,9 @@ const Footer = () => {
                 <Phone className="h-4 w-4 text-gold flex-shrink-0" />
                 <span>+33 7 80 17 01 58</span>
               </a>
-              <a href="mailto:contact@zeyanii.com" className="flex items-center gap-3 text-cream/60 text-xs sm:text-sm hover:text-gold transition-colors">
+              <a href="mailto:Zeyani-site@outlook.fr" className="flex items-center gap-3 text-cream/60 text-xs sm:text-sm hover:text-gold transition-colors">
                 <Mail className="h-4 w-4 text-gold flex-shrink-0" />
-                <span>contact@zeyanii.com</span>
+                <span>Zeyani-site@outlook.fr</span>
               </a>
             </div>
 
