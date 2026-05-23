@@ -144,9 +144,13 @@ const Checkout = () => {
             {/* Success Header */}
             <div className="text-center mb-8">
               <CheckCircle2 className="h-16 w-16 mx-auto text-green-600 mb-4" />
-              <h1 className="text-3xl font-serif mb-2">Commande confirmée !</h1>
+              <h1 className="text-3xl font-serif mb-2">
+                {successMethod === "wero" ? "Preuve de paiement bien reçue !" : "Commande confirmée !"}
+              </h1>
               <p className="text-muted-foreground">
-                Merci pour votre confiance. Votre commande a été enregistrée avec succès.
+                {successMethod === "wero"
+                  ? "Merci ! Votre commande a bien été enregistrée. Notre service va vérifier votre virement Wero et vous confirmer la commande par email sous 24h (souvent beaucoup plus vite)."
+                  : "Merci pour votre confiance. Votre commande a été enregistrée avec succès."}
               </p>
             </div>
 
@@ -156,11 +160,12 @@ const Checkout = () => {
                 <FileText className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
                 <div>
                   <h3 className="font-semibold text-foreground mb-1">
-                    Téléchargez votre reçu
+                    {successMethod === "wero" ? "En attente de validation" : "Téléchargez votre reçu"}
                   </h3>
                   <p className="text-sm text-muted-foreground">
-                    Conservez ce reçu pour vos dossiers. Il contient toutes les informations 
-                    relatives à votre commande.
+                    {successMethod === "wero"
+                      ? "Votre commande est en statut « En attente de validation ». Dès que le paiement est vérifié par notre équipe, vous recevrez un email de confirmation et la préparation démarrera."
+                      : "Conservez ce reçu pour vos dossiers. Il contient toutes les informations relatives à votre commande."}
                   </p>
                 </div>
               </div>
