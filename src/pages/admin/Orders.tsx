@@ -535,4 +535,33 @@ const AdminOrders = () => {
   );
 };
 
+const WeroProofPreview = ({ path }: { path: string }) => {
+  const [url, setUrl] = useState<string | null>(null);
+  useEffect(() => {
+    supabase.storage
+      .from('payment-proofs')
+      .createSignedUrl(path, 3600)
+      .then(({ data }) => setUrl(data?.signedUrl || null));
+  }, [path]);
+  return (
+    <div className="border rounded-lg p-4 bg-blue-50/50">
+      <h4 className="font-medium mb-2 flex items-center gap-2">
+        💸 Preuve de paiement Wero
+      </h4>
+      {url ? (
+        <a href={url} target="_blank" rel="noopener noreferrer">
+          <img
+            src={url}
+            alt="Preuve Wero"
+            className="max-h-96 rounded border hover:opacity-90 transition"
+          />
+          <p className="text-xs text-muted-foreground mt-1">Cliquer pour ouvrir en grand</p>
+        </a>
+      ) : (
+        <Loader2 className="h-5 w-5 animate-spin" />
+      )}
+    </div>
+  );
+};
+
 export default AdminOrders;
