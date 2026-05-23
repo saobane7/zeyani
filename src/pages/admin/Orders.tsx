@@ -347,6 +347,10 @@ const AdminOrders = () => {
                 )}
               </div>
 
+              {selectedOrder.payment_method === 'wero' && selectedOrder.payment_proof_url && (
+                <WeroProofPreview path={selectedOrder.payment_proof_url} />
+              )}
+
               <div>
                 <h4 className="font-medium mb-2">Articles</h4>
                 <div className="border rounded-lg">
