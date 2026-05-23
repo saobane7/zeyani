@@ -12,7 +12,7 @@ import { Separator } from "@/components/ui/separator";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, CheckCircle2, ShieldCheck, Lock, Package, Truck, MapPin, Building2, Gift, LogIn, Loader2, FileText, History, Smartphone } from "lucide-react";
+import { ArrowLeft, CheckCircle2, ShieldCheck, Lock, Package, Truck, MapPin, Building2, Gift, LogIn, Loader2, FileText, History, Smartphone, CreditCard } from "lucide-react";
 
 export type ShippingOption = "free" | "locker" | "relay" | "home";
 
