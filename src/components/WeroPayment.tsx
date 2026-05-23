@@ -179,8 +179,8 @@ const WeroPayment = ({ onSuccess, shippingOption }: WeroPaymentProps) => {
         </div>
         <p className="text-xs text-muted-foreground">
           Faites une capture d'écran de la confirmation Wero et téléversez-la ci-dessous.
-          Dès réception et vérification, vous recevrez un email de confirmation et votre
-          commande sera préparée.
+          Notre équipe vérifie chaque virement manuellement et vous confirmera la commande
+          par email sous 24h (souvent en quelques heures).
         </p>
         <div>
           <Label htmlFor="proof" className="text-xs">Capture d'écran du virement</Label>
