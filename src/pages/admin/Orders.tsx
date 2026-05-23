@@ -219,7 +219,8 @@ const AdminOrders = () => {
                   filteredOrders?.map((order) => (
                     <TableRow key={order.id}>
                       <TableCell>
-                        <p className="font-mono text-sm">{order.paypal_order_id.slice(0, 15)}...</p>
+                        <p className="font-mono text-sm">{(order.paypal_order_id || order.id).slice(0, 15)}...</p>
+                        <p className="text-xs text-muted-foreground capitalize">{order.payment_method}</p>
                       </TableCell>
                       <TableCell>{order.payer_email || 'N/A'}</TableCell>
                       <TableCell>
