@@ -74,7 +74,7 @@ const WeroPayment = ({ onSuccess, shippingOption }: WeroPaymentProps) => {
       if (orderErr) throw orderErr;
 
       clearCart();
-      toast.success("Commande enregistrée ! Nous vérifions votre paiement.");
+      toast.success("Preuve bien envoyée — notre service confirmera votre commande sous 24h");
       onSuccess(order.id);
     } catch (e: any) {
       console.error(e);
