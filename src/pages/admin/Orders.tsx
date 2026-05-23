@@ -50,7 +50,9 @@ import {
 
 interface Order {
   id: string;
-  paypal_order_id: string;
+  paypal_order_id: string | null;
+  payment_method: string;
+  payment_proof_url: string | null;
   status: string;
   total_amount: number;
   currency: string;
