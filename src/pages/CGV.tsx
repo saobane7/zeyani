@@ -89,7 +89,7 @@ const CGV = () => {
                   exercer votre droit de rétractation, sans avoir à justifier de motifs.
                 </p>
                 <p className="mt-2">
-                  Pour exercer ce droit, contactez-nous par email à contact@zeyanii.com. 
+                  Pour exercer ce droit, contactez-nous par email à Zeyani-site@outlook.fr. 
                   Les produits doivent être retournés dans leur état d'origine, non portés, 
                   avec leur emballage. Les frais de retour sont à la charge du client.
                 </p>
@@ -111,7 +111,7 @@ const CGV = () => {
               <section>
                 <h2 className="text-xl font-semibold text-foreground mb-4">Article 9 - Réclamations</h2>
                 <p>
-                  Toute réclamation doit être adressée par email à contact@zeyanii.com dans un 
+                  Toute réclamation doit être adressée par email à Zeyani-site@outlook.fr dans un 
                   délai de 14 jours suivant la réception de la commande. Joignez des photos 
                   si nécessaire pour faciliter le traitement.
                 </p>
@@ -169,7 +169,7 @@ const CGV = () => {
                   Pour toute question concernant ces CGV :
                 </p>
                 <ul className="list-none space-y-1 mt-2">
-                  <li>Email : contact@zeyanii.com</li>
+                  <li>Email : Zeyani-site@outlook.fr</li>
                   <li>Téléphone : +33 7 80 17 01 58</li>
                 </ul>
               </section>
