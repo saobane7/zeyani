@@ -279,7 +279,7 @@ const AdminOrders = () => {
           <DialogHeader>
             <DialogTitle>Détails de la commande</DialogTitle>
             <DialogDescription>
-              {selectedOrder?.paypal_order_id}
+              {selectedOrder?.paypal_order_id || selectedOrder?.id}
             </DialogDescription>
           </DialogHeader>
 
