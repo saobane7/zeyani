@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Button } from '@/components/ui/button';
@@ -50,7 +50,9 @@ import {
 
 interface Order {
   id: string;
-  paypal_order_id: string;
+  paypal_order_id: string | null;
+  payment_method: string;
+  payment_proof_url: string | null;
   status: string;
   total_amount: number;
   currency: string;
@@ -127,7 +129,8 @@ const AdminOrders = () => {
 
   const filteredOrders = orders?.filter(
     (order) =>
-      order.paypal_order_id.toLowerCase().includes(search.toLowerCase()) ||
+      (order.paypal_order_id?.toLowerCase().includes(search.toLowerCase()) ?? false) ||
+      order.id.toLowerCase().includes(search.toLowerCase()) ||
       order.payer_email?.toLowerCase().includes(search.toLowerCase())
   );
 
@@ -216,7 +219,8 @@ const AdminOrders = () => {
                   filteredOrders?.map((order) => (
                     <TableRow key={order.id}>
                       <TableCell>
-                        <p className="font-mono text-sm">{order.paypal_order_id.slice(0, 15)}...</p>
+                        <p className="font-mono text-sm">{(order.paypal_order_id || order.id).slice(0, 15)}...</p>
+                        <p className="text-xs text-muted-foreground capitalize">{order.payment_method}</p>
                       </TableCell>
                       <TableCell>{order.payer_email || 'N/A'}</TableCell>
                       <TableCell>
@@ -275,7 +279,7 @@ const AdminOrders = () => {
           <DialogHeader>
             <DialogTitle>Détails de la commande</DialogTitle>
             <DialogDescription>
-              {selectedOrder?.paypal_order_id}
+              {selectedOrder?.paypal_order_id || selectedOrder?.id}
             </DialogDescription>
           </DialogHeader>
 
@@ -342,6 +346,10 @@ const AdminOrders = () => {
                   </div>
                 )}
               </div>
+
+              {selectedOrder.payment_method === 'wero' && selectedOrder.payment_proof_url && (
+                <WeroProofPreview path={selectedOrder.payment_proof_url} />
+              )}
 
               <div>
                 <h4 className="font-medium mb-2">Articles</h4>
@@ -524,6 +532,35 @@ const AdminOrders = () => {
         </DialogContent>
       </Dialog>
     </AdminLayout>
+  );
+};
+
+const WeroProofPreview = ({ path }: { path: string }) => {
+  const [url, setUrl] = useState<string | null>(null);
+  useEffect(() => {
+    supabase.storage
+      .from('payment-proofs')
+      .createSignedUrl(path, 3600)
+      .then(({ data }) => setUrl(data?.signedUrl || null));
+  }, [path]);
+  return (
+    <div className="border rounded-lg p-4 bg-blue-50/50">
+      <h4 className="font-medium mb-2 flex items-center gap-2">
+        💸 Preuve de paiement Wero
+      </h4>
+      {url ? (
+        <a href={url} target="_blank" rel="noopener noreferrer">
+          <img
+            src={url}
+            alt="Preuve Wero"
+            className="max-h-96 rounded border hover:opacity-90 transition"
+          />
+          <p className="text-xs text-muted-foreground mt-1">Cliquer pour ouvrir en grand</p>
+        </a>
+      ) : (
+        <Loader2 className="h-5 w-5 animate-spin" />
+      )}
+    </div>
   );
 };
 
