@@ -38,7 +38,8 @@ const Checkout = () => {
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const [selectedShipping, setSelectedShipping] = useState<ShippingOption>("free");
   const [orderDate, setOrderDate] = useState<Date>(new Date());
-  
+  const [successMethod, setSuccessMethod] = useState<"paypal" | "wero">("paypal");
+
   // Store order items for the receipt (since cart will be cleared)
   const [orderItems, setOrderItems] = useState<Array<{
     name: string;
@@ -51,8 +52,7 @@ const Checkout = () => {
   const shippingPrice = SHIPPING_OPTIONS[selectedShipping].price;
   const finalTotal = totalPrice + shippingPrice;
 
-  const handleSuccess = (id: string) => {
-    // Store order details before clearing cart
+  const handleSuccess = (id: string, method: "paypal" | "wero" = "paypal") => {
     setOrderItems(items.map(item => ({
       name: item.product.name,
       quantity: item.quantity,
@@ -61,8 +61,9 @@ const Checkout = () => {
     setOrderSubtotal(totalPrice);
     setOrderShipping(SHIPPING_OPTIONS[selectedShipping]);
     setOrderDate(new Date());
-    
+
     setOrderId(id);
+    setSuccessMethod(method);
     setOrderSuccess(true);
     setPaymentError(null);
   };
