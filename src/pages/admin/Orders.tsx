@@ -351,6 +351,31 @@ const AdminOrders = () => {
                 <WeroProofPreview path={selectedOrder.payment_proof_url} />
               )}
 
+              {selectedOrder.payer_email && (
+                <div className="border rounded-lg p-4 bg-secondary/30">
+                  <h4 className="font-medium mb-2">Confirmer la commande au client</h4>
+                  <p className="text-xs text-muted-foreground mb-3">
+                    Après vérification du virement, envoyez un email de confirmation au client
+                    depuis votre boîte mail (Zeyani-site@outlook.fr). Le brouillon est pré-rempli.
+                  </p>
+                  <Button
+                    asChild
+                    variant="gold"
+                    size="sm"
+                  >
+                    <a
+                      href={`mailto:${selectedOrder.payer_email}?subject=${encodeURIComponent(
+                        `Confirmation de votre commande Zeyanii #${(selectedOrder.paypal_order_id || selectedOrder.id).slice(0, 8)}`
+                      )}&body=${encodeURIComponent(
+                        `Bonjour,\n\nNous avons bien reçu votre virement Wero pour votre commande #${(selectedOrder.paypal_order_id || selectedOrder.id).slice(0, 8)} d'un montant de ${selectedOrder.total_amount.toFixed(2)} ${selectedOrder.currency}.\n\nVotre commande est désormais confirmée et sera préparée puis expédiée dans les meilleurs délais.\n\nMerci pour votre confiance,\nL'équipe Zeyanii`
+                      )}`}
+                    >
+                      Ouvrir le brouillon d'email
+                    </a>
+                  </Button>
+                </div>
+              )}
+
               <div>
                 <h4 className="font-medium mb-2">Articles</h4>
                 <div className="border rounded-lg">
