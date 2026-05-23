@@ -5,12 +5,14 @@ import { useAuth } from "@/hooks/useAuth";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import PayPalButton from "@/components/PayPalButton";
+import WeroPayment from "@/components/WeroPayment";
 import OrderReceipt from "@/components/OrderReceipt";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, CheckCircle2, ShieldCheck, Lock, Package, Truck, MapPin, Building2, Gift, LogIn, Loader2, FileText, History } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ArrowLeft, CheckCircle2, ShieldCheck, Lock, Package, Truck, MapPin, Building2, Gift, LogIn, Loader2, FileText, History, Smartphone, CreditCard } from "lucide-react";
 
 export type ShippingOption = "free" | "locker" | "relay" | "home";
 
@@ -349,12 +351,32 @@ const Checkout = () => {
                 </div>
               )}
 
-              <PayPalButton
-                onSuccess={handleSuccess}
-                onError={handleError}
-                disabled={items.length === 0}
-                shippingOption={SHIPPING_OPTIONS[selectedShipping]}
-              />
+              <Tabs defaultValue="wero" className="w-full">
+                <TabsList className="grid w-full grid-cols-2 mb-4">
+                  <TabsTrigger value="wero" className="gap-2">
+                    <Smartphone className="h-4 w-4" /> Wero
+                  </TabsTrigger>
+                  <TabsTrigger value="paypal" className="gap-2">
+                    <CreditCard className="h-4 w-4" /> PayPal / CB
+                  </TabsTrigger>
+                </TabsList>
+                <TabsContent value="wero">
+                  <WeroPayment
+                    onSuccess={handleSuccess}
+                    shippingOption={SHIPPING_OPTIONS[selectedShipping]}
+                  />
+                </TabsContent>
+                <TabsContent value="paypal">
+                  <PayPalButton
+                    onSuccess={handleSuccess}
+                    onError={handleError}
+                    disabled={items.length === 0}
+                    shippingOption={SHIPPING_OPTIONS[selectedShipping]}
+                  />
+                </TabsContent>
+              </Tabs>
+
+
 
               <p className="text-xs text-muted-foreground mt-6 text-center">
                 En procédant au paiement, vous acceptez nos{" "}

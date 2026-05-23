@@ -22,7 +22,9 @@ export type Database = {
           id: string
           items: Json
           payer_email: string | null
-          paypal_order_id: string
+          payment_method: string
+          payment_proof_url: string | null
+          paypal_order_id: string | null
           received_at: string | null
           shipping_address: Json | null
           status: string
@@ -37,7 +39,9 @@ export type Database = {
           id?: string
           items: Json
           payer_email?: string | null
-          paypal_order_id: string
+          payment_method?: string
+          payment_proof_url?: string | null
+          paypal_order_id?: string | null
           received_at?: string | null
           shipping_address?: Json | null
           status?: string
@@ -52,7 +56,9 @@ export type Database = {
           id?: string
           items?: Json
           payer_email?: string | null
-          paypal_order_id?: string
+          payment_method?: string
+          payment_proof_url?: string | null
+          paypal_order_id?: string | null
           received_at?: string | null
           shipping_address?: Json | null
           status?: string
