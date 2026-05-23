@@ -26,7 +26,7 @@ const MentionsLegales = () => {
                 </p>
                 <ul className="list-none space-y-1 mt-4">
                   <li><strong>Nom commercial :</strong> ZEYANI</li>
-                  <li><strong>Email :</strong> contact@zeyani.fr</li>
+                  <li><strong>Email :</strong> contact@zeyanii.com</li>
                   <li><strong>Téléphone :</strong> +33 7 80 17 01 58</li>
                   <li><strong>Pays :</strong> France</li>
                 </ul>
@@ -84,7 +84,7 @@ const MentionsLegales = () => {
                   Pour toute question concernant ces mentions légales, vous pouvez nous contacter :
                 </p>
                 <ul className="list-none space-y-1 mt-2">
-                  <li>Par email : contact@zeyani.fr</li>
+                  <li>Par email : contact@zeyanii.com</li>
                   <li>Par téléphone : +33 7 80 17 01 58</li>
                 </ul>
               </section>

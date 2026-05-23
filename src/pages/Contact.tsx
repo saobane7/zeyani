@@ -41,8 +41,8 @@ const Contact = () => {
     {
       icon: Mail,
       title: "Email",
-      content: "contact@zeyani.fr",
-      href: "mailto:contact@zeyani.fr",
+      content: "contact@zeyanii.com",
+      href: "mailto:contact@zeyanii.com",
     },
     {
       icon: Phone,
