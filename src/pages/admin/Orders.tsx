@@ -129,7 +129,8 @@ const AdminOrders = () => {
 
   const filteredOrders = orders?.filter(
     (order) =>
-      order.paypal_order_id.toLowerCase().includes(search.toLowerCase()) ||
+      (order.paypal_order_id?.toLowerCase().includes(search.toLowerCase()) ?? false) ||
+      order.id.toLowerCase().includes(search.toLowerCase()) ||
       order.payer_email?.toLowerCase().includes(search.toLowerCase())
   );
 
