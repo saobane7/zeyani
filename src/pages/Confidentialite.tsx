@@ -86,7 +86,7 @@ const Confidentialite = () => {
                   <li><strong>Droit d'opposition :</strong> vous opposer au traitement de vos données</li>
                 </ul>
                 <p className="mt-4">
-                  Pour exercer ces droits, contactez-nous à : <strong>contact@zeyani.fr</strong>
+                  Pour exercer ces droits, contactez-nous à : <strong>contact@zeyanii.com</strong>
                 </p>
               </section>
 
@@ -122,7 +122,7 @@ const Confidentialite = () => {
                   Pour toute question relative à cette politique de confidentialité :
                 </p>
                 <ul className="list-none space-y-1 mt-2">
-                  <li>Email : contact@zeyani.fr</li>
+                  <li>Email : contact@zeyanii.com</li>
                   <li>Téléphone : +33 7 80 17 01 58</li>
                 </ul>
               </section>
