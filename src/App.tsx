@@ -26,6 +26,7 @@ import EditProduct from "./pages/admin/EditProduct";
 import AdminOrders from "./pages/admin/Orders";
 import AdminSettings from "./pages/admin/Settings";
 import AdminLogin from "./pages/admin/Login";
+import CookieBanner from "./components/CookieBanner";
 
 const queryClient = new QueryClient();
 
@@ -60,6 +61,7 @@ const App = () => (
                 <Route path="/admin/parametres" element={<AdminSettings />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
+              <CookieBanner />
             </BrowserRouter>
           </CartProvider>
         </AdminProvider>
