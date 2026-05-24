@@ -61,8 +61,8 @@ const Contact = () => {
     {
       icon: Phone,
       title: "Téléphone",
-      content: "+33 1 23 45 67 89",
-      href: "tel:+33123456789",
+      content: "+33 7 80 17 01 58",
+      href: "tel:+33780170158",
     },
     {
       icon: MapPin,
