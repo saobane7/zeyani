@@ -4,6 +4,7 @@ import { Separator } from "@/components/ui/separator";
 import { Download, Printer, FileText } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { getShortOrderRef } from "@/lib/orderRef";
 
 interface ReceiptItem {
   name: string;
