@@ -8,6 +8,7 @@ import { fr } from "date-fns/locale";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { OrderStatusTimeline, StatusBadge, getStatusConfig } from "@/components/OrderStatusTimeline";
+import { getShortOrderRef } from "@/lib/orderRef";
 
 interface OrderItem {
   name: string;
