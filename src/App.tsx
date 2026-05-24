@@ -19,6 +19,7 @@ import MentionsLegales from "./pages/MentionsLegales";
 import Confidentialite from "./pages/Confidentialite";
 import CGV from "./pages/CGV";
 import NotFound from "./pages/NotFound";
+import ResetPassword from "./pages/ResetPassword";
 import AdminDashboard from "./pages/admin/Dashboard";
 import AdminProducts from "./pages/admin/Products";
 import NewProduct from "./pages/admin/NewProduct";
@@ -49,6 +50,7 @@ const App = () => (
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/checkout" element={<Checkout />} />
                 <Route path="/auth" element={<Auth />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/mes-commandes" element={<OrderHistory />} />
                 <Route path="/guide-des-tailles" element={<SizeGuide />} />
                 <Route path="/mentions-legales" element={<MentionsLegales />} />

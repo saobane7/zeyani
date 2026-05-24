@@ -70,6 +70,26 @@ const AdminLogin = () => {
     }
   };
 
+  const handlePasswordReset = async () => {
+    const email = document.querySelector<HTMLInputElement>('input[name="email"]')?.value;
+
+    if (!email) {
+      toast.error('Entrez d’abord votre email');
+      return;
+    }
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+
+    if (error) {
+      toast.error('Impossible d’envoyer l’email de réinitialisation');
+      return;
+    }
+
+    toast.success('Email de réinitialisation envoyé');
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <Card className="w-full max-w-md">
@@ -110,6 +130,10 @@ const AdminLogin = () => {
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
               Se connecter
+            </Button>
+
+            <Button type="button" variant="link" className="w-full" onClick={handlePasswordReset}>
+              Mot de passe oublié ?
             </Button>
           </form>
 
