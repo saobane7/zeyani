@@ -364,7 +364,7 @@ const OrderReceipt = ({
 
         {/* Footer */}
         <div className="mt-6 pt-4 border-t text-center text-xs text-muted-foreground">
-          <p>Merci pour votre achat chez Niger Chic Designs</p>
+          <p>Merci pour votre achat chez Zeyani</p>
           <p className="mt-1">Ce reçu fait foi de votre commande</p>
         </div>
       </div>
