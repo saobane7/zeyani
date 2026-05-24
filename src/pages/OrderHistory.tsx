@@ -96,6 +96,7 @@ const OrderHistory = () => {
     const shippingMethod = order.shipping_address?.method || { type: "free", label: "Livraison gratuite", price: 0 };
     const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
+    const shortRef = getShortOrderRef(order.paypal_order_id);
 
     const printWindow = window.open("", "_blank");
     if (!printWindow) {
