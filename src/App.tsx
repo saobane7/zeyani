@@ -26,6 +26,8 @@ import EditProduct from "./pages/admin/EditProduct";
 import AdminOrders from "./pages/admin/Orders";
 import AdminSettings from "./pages/admin/Settings";
 import AdminLogin from "./pages/admin/Login";
+import AdminMessages from "./pages/admin/Messages";
+import AdminVideo from "./pages/admin/Video";
 import CookieBanner from "./components/CookieBanner";
 
 const queryClient = new QueryClient();
