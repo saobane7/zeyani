@@ -303,7 +303,7 @@ const OrderReceipt = ({
         <div className="grid grid-cols-2 gap-4 mb-6">
           <div className="bg-muted/50 rounded-md p-3">
             <p className="text-xs text-muted-foreground uppercase mb-1">N° de commande</p>
-            <p className="text-sm font-mono font-medium truncate">{orderId}</p>
+            <p className="text-sm font-mono font-medium truncate">{shortRef}</p>
           </div>
           <div className="bg-muted/50 rounded-md p-3">
             <p className="text-xs text-muted-foreground uppercase mb-1">Date</p>
