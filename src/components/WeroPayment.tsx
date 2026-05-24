@@ -1,12 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Smartphone, Copy, Check, Upload, ShieldCheck, Loader2, Info, Apple, Smartphone as Android } from "lucide-react";
+import { Smartphone, Copy, Check, Upload, ShieldCheck, Loader2, Info, Apple, Smartphone as Android, MapPin } from "lucide-react";
 import { toast } from "sonner";
 import { ShippingInfo } from "@/pages/Checkout";
 
@@ -24,7 +26,30 @@ const WeroPayment = ({ onSuccess, shippingOption }: WeroPaymentProps) => {
   const [copied, setCopied] = useState(false);
   const [proofFile, setProofFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  // Profile / delivery address
+  const [profile, setProfile] = useState<{ first_name: string | null; last_name: string | null; address: string | null } | null>(null);
+  const [useProfileAddress, setUseProfileAddress] = useState(true);
+  const [deliveryFullName, setDeliveryFullName] = useState("");
+  const [deliveryAddress, setDeliveryAddress] = useState("");
+
   const finalTotal = totalPrice + shippingOption.price;
+
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from("profiles")
+      .select("first_name,last_name,address")
+      .eq("user_id", user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) {
+          setProfile(data);
+          setDeliveryFullName(`${data.first_name ?? ""} ${data.last_name ?? ""}`.trim());
+          setDeliveryAddress(data.address ?? "");
+        }
+      });
+  }, [user]);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(WERO_PHONE_RAW);
@@ -42,6 +67,17 @@ const WeroPayment = ({ onSuccess, shippingOption }: WeroPaymentProps) => {
       toast.error("Vous devez être connecté");
       return;
     }
+
+    const finalName = useProfileAddress
+      ? `${profile?.first_name ?? ""} ${profile?.last_name ?? ""}`.trim()
+      : deliveryFullName.trim();
+    const finalAddress = useProfileAddress ? (profile?.address ?? "") : deliveryAddress.trim();
+
+    if (!finalName || finalAddress.length < 5) {
+      toast.error("Veuillez renseigner une adresse de livraison valide");
+      return;
+    }
+
     setSubmitting(true);
     try {
       const ext = proofFile.name.split(".").pop();
@@ -67,7 +103,12 @@ const WeroPayment = ({ onSuccess, shippingOption }: WeroPaymentProps) => {
             price: i.product.price,
             quantity: i.quantity,
           })) as any,
-          shipping_address: { method: shippingOption.label, price: shippingOption.price } as any,
+          shipping_address: {
+            method: { type: shippingOption.type, label: shippingOption.label, price: shippingOption.price },
+            full_name: finalName,
+            address: finalAddress,
+            same_as_profile: useProfileAddress,
+          } as any,
         })
         .select()
         .single();
@@ -94,6 +135,57 @@ const WeroPayment = ({ onSuccess, shippingOption }: WeroPaymentProps) => {
           Vos données restent dans votre banque.
         </AlertDescription>
       </Alert>
+
+      {/* Delivery address */}
+      <div className="bg-secondary/40 rounded-lg p-5 space-y-3">
+        <div className="flex items-center gap-2">
+          <MapPin className="h-5 w-5 text-gold-dark" />
+          <h3 className="font-semibold">Adresse de livraison</h3>
+        </div>
+
+        {profile?.address && (
+          <div className="text-sm border rounded p-3 bg-background">
+            <p className="font-medium">{`${profile.first_name ?? ""} ${profile.last_name ?? ""}`.trim()}</p>
+            <p className="text-muted-foreground whitespace-pre-line">{profile.address}</p>
+          </div>
+        )}
+
+        <div className="flex items-start gap-2">
+          <Checkbox
+            id="useProfile"
+            checked={useProfileAddress}
+            onCheckedChange={(c) => setUseProfileAddress(!!c)}
+          />
+          <Label htmlFor="useProfile" className="text-sm cursor-pointer leading-tight">
+            Livrer à l'adresse de mon compte
+          </Label>
+        </div>
+
+        {!useProfileAddress && (
+          <div className="space-y-3 pt-2 border-t">
+            <p className="text-xs text-muted-foreground">Saisissez une autre adresse de destination :</p>
+            <div className="space-y-1">
+              <Label htmlFor="dName" className="text-xs">Nom complet du destinataire</Label>
+              <Input
+                id="dName"
+                value={deliveryFullName}
+                onChange={(e) => setDeliveryFullName(e.target.value)}
+                placeholder="Prénom Nom"
+              />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="dAddr" className="text-xs">Adresse complète</Label>
+              <Textarea
+                id="dAddr"
+                value={deliveryAddress}
+                onChange={(e) => setDeliveryAddress(e.target.value)}
+                placeholder="N° et rue, code postal, ville"
+                rows={2}
+              />
+            </div>
+          </div>
+        )}
+      </div>
 
       <div className="bg-secondary/40 rounded-lg p-5 space-y-4">
         <div className="flex items-center gap-2">
