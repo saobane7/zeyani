@@ -291,15 +291,15 @@ const OrderHistory = () => {
 
           <div class="legal">
             <p><strong>Informations légales</strong></p>
-            <p>Ce reçu fait foi de votre achat auprès de Niger Chic Designs.</p>
+            <p>Ce reçu fait foi de votre achat auprès de Zeyani.</p>
             <p>Conformément au RGPD, vos données personnelles sont conservées pendant 3 ans après réception de votre commande.</p>
             <p>Pour toute question concernant votre commande, contactez-nous via notre formulaire de contact.</p>
           </div>
 
           <div class="footer">
-            <p><strong>Niger Chic Designs</strong></p>
+            <p><strong>Zeyani</strong></p>
             <p>Bijoux artisanaux touaregs - Fait main au Niger</p>
-            <p>www.niger-chic-designs.lovable.app</p>
+            <p>www.zeyanii.com</p>
             <p style="margin-top: 15px;">Merci pour votre confiance !</p>
           </div>
         </body>
