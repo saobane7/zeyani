@@ -50,6 +50,7 @@ import {
 
 interface Order {
   id: string;
+  user_id: string;
   paypal_order_id: string | null;
   payment_method: string;
   payment_proof_url: string | null;
@@ -324,27 +325,7 @@ const AdminOrders = () => {
                   </dl>
                 </div>
 
-                {selectedOrder.shipping_address && (
-                  <div>
-                    <h4 className="font-medium mb-2">Adresse de livraison</h4>
-                    <address className="text-sm not-italic text-muted-foreground">
-                      {selectedOrder.shipping_address.full_name}
-                      <br />
-                      {selectedOrder.shipping_address.address_line_1}
-                      {selectedOrder.shipping_address.address_line_2 && (
-                        <>
-                          <br />
-                          {selectedOrder.shipping_address.address_line_2}
-                        </>
-                      )}
-                      <br />
-                      {selectedOrder.shipping_address.postal_code}{' '}
-                      {selectedOrder.shipping_address.admin_area_2}
-                      <br />
-                      {selectedOrder.shipping_address.country_code}
-                    </address>
-                  </div>
-                )}
+                <CustomerInfo userId={selectedOrder.user_id} shippingAddress={selectedOrder.shipping_address} />
               </div>
 
               {selectedOrder.payment_method === 'wero' && selectedOrder.payment_proof_url && (
@@ -585,6 +566,70 @@ const WeroProofPreview = ({ path }: { path: string }) => {
       ) : (
         <Loader2 className="h-5 w-5 animate-spin" />
       )}
+    </div>
+  );
+};
+
+const CustomerInfo = ({ userId, shippingAddress }: { userId: string; shippingAddress: any }) => {
+  const [profile, setProfile] = useState<{ first_name: string | null; last_name: string | null; email: string | null; address: string | null } | null>(null);
+
+  useEffect(() => {
+    if (!userId) return;
+    supabase
+      .from('profiles')
+      .select('first_name,last_name,email,address')
+      .eq('user_id', userId)
+      .maybeSingle()
+      .then(({ data }) => setProfile(data));
+  }, [userId]);
+
+  const sa = shippingAddress || {};
+  const deliveryName = sa.full_name || (profile ? `${profile.first_name ?? ''} ${profile.last_name ?? ''}`.trim() : '');
+  const deliveryAddress = sa.address
+    || [sa.address_line_1, sa.address_line_2, sa.postal_code, sa.admin_area_2 || sa.city, sa.country_code]
+        .filter(Boolean)
+        .join(', ')
+    || profile?.address
+    || '';
+  const sameAsProfile = sa.same_as_profile;
+
+  return (
+    <div className="space-y-4">
+      <div>
+        <h4 className="font-medium mb-2">Compte client</h4>
+        <dl className="space-y-1 text-sm">
+          <div className="flex justify-between gap-4">
+            <dt className="text-muted-foreground">Nom :</dt>
+            <dd className="text-right">{profile ? `${profile.first_name ?? ''} ${profile.last_name ?? ''}`.trim() || '—' : '…'}</dd>
+          </div>
+          <div className="flex justify-between gap-4">
+            <dt className="text-muted-foreground">Email :</dt>
+            <dd className="text-right break-all">{profile?.email || '—'}</dd>
+          </div>
+          <div>
+            <dt className="text-muted-foreground">Adresse du compte :</dt>
+            <dd className="text-sm whitespace-pre-line">{profile?.address || '—'}</dd>
+          </div>
+        </dl>
+      </div>
+
+      <div>
+        <h4 className="font-medium mb-2">
+          Adresse de livraison{' '}
+          {sameAsProfile === false && (
+            <span className="text-xs font-normal text-amber-600">(différente du compte)</span>
+          )}
+        </h4>
+        <address className="text-sm not-italic">
+          <p className="font-medium">{deliveryName || '—'}</p>
+          <p className="text-muted-foreground whitespace-pre-line">{deliveryAddress || '—'}</p>
+          {sa.method?.label && (
+            <p className="text-xs text-muted-foreground mt-2">
+              Mode : {sa.method.label} ({sa.method.price?.toFixed?.(2) ?? sa.method.price} €)
+            </p>
+          )}
+        </address>
+      </div>
     </div>
   );
 };

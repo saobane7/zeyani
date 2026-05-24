@@ -28,7 +28,7 @@ const trustBadges = [
   "Paiement Sécurisé",
   "Satisfait ou Remboursé",
   "Service Client Réactif",
-  "Garantie 2 Mois",
+  "Garantie 30 Jours",
 ];
 
 const AboutSection = () => {

@@ -98,7 +98,7 @@ const CGV = () => {
               <section>
                 <h2 className="text-xl font-semibold text-foreground mb-4">Article 8 - Garantie</h2>
                 <p>
-                  Tous nos bijoux bénéficient d'une garantie de <strong>2 mois</strong> contre 
+                  Tous nos bijoux bénéficient d'une garantie de <strong>30 jours</strong> contre 
                   les défauts de fabrication. Cette garantie ne couvre pas l'usure normale, 
                   les dommages causés par une mauvaise utilisation ou un accident.
                 </p>
