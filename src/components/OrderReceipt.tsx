@@ -167,13 +167,13 @@ const OrderReceipt = ({
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Reçu - Niger Chic Designs - ${orderId}</title>
+          <title>Reçu - Zeyani - ${shortRef}</title>
           <meta charset="utf-8">
           ${styles}
         </head>
         <body>
           <div class="header">
-            <div class="logo">Niger Chic Designs</div>
+            <div class="logo">Zeyani</div>
             <div class="subtitle">Bijoux artisanaux touaregs</div>
           </div>
 
@@ -182,7 +182,7 @@ const OrderReceipt = ({
           <div class="info-grid">
             <div class="info-box">
               <div class="info-label">Numéro de commande</div>
-              <div class="info-value">${orderId}</div>
+              <div class="info-value">${shortRef}</div>
             </div>
             <div class="info-box">
               <div class="info-label">Date de commande</div>
