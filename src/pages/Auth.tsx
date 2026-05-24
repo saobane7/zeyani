@@ -4,12 +4,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { z } from "zod";
 
 const emailSchema = z.string().email("Email invalide");
 const passwordSchema = z.string().min(6, "Mot de passe: minimum 6 caractères");
+const nameSchema = z.string().trim().min(1, "Champ requis").max(80);
+const addressSchema = z.string().trim().min(5, "Adresse trop courte").max(300);
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -18,62 +21,53 @@ const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [address, setAddress] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    // Check if user is already logged in
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        if (session?.user) {
-          navigate(redirectTo);
-        }
+        if (session?.user) navigate(redirectTo);
       }
     );
-
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        navigate(redirectTo);
-      }
+      if (session?.user) navigate(redirectTo);
     });
-
     return () => subscription.unsubscribe();
   }, [navigate, redirectTo]);
 
   const validateForm = (): boolean => {
-    const newErrors: { email?: string; password?: string } = {};
-    
+    const newErrors: Record<string, string> = {};
     const emailResult = emailSchema.safeParse(email);
-    if (!emailResult.success) {
-      newErrors.email = emailResult.error.errors[0].message;
-    }
-    
+    if (!emailResult.success) newErrors.email = emailResult.error.errors[0].message;
     const passwordResult = passwordSchema.safeParse(password);
-    if (!passwordResult.success) {
-      newErrors.password = passwordResult.error.errors[0].message;
+    if (!passwordResult.success) newErrors.password = passwordResult.error.errors[0].message;
+
+    if (!isLogin) {
+      const fn = nameSchema.safeParse(firstName);
+      if (!fn.success) newErrors.firstName = fn.error.errors[0].message;
+      const ln = nameSchema.safeParse(lastName);
+      if (!ln.success) newErrors.lastName = ln.error.errors[0].message;
+      const ad = addressSchema.safeParse(address);
+      if (!ad.success) newErrors.address = ad.error.errors[0].message;
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!validateForm()) {
-      return;
-    }
-    
+    if (!validateForm()) return;
     setLoading(true);
 
     try {
       if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-        
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) {
           if (error.message.includes("Invalid login credentials")) {
             toast.error("Email ou mot de passe incorrect");
@@ -82,7 +76,6 @@ const Auth = () => {
           }
           return;
         }
-        
         toast.success("Connexion réussie !");
         navigate(redirectTo);
       } else {
@@ -91,9 +84,13 @@ const Auth = () => {
           password,
           options: {
             emailRedirectTo: `${window.location.origin}/`,
+            data: {
+              first_name: firstName.trim(),
+              last_name: lastName.trim(),
+              address: address.trim(),
+            },
           },
         });
-        
         if (error) {
           if (error.message.includes("User already registered")) {
             toast.error("Cet email est déjà utilisé. Connectez-vous plutôt.");
@@ -102,7 +99,6 @@ const Auth = () => {
           }
           return;
         }
-        
         toast.success("Compte créé avec succès !");
         navigate(redirectTo);
       }
@@ -116,30 +112,66 @@ const Auth = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <div className="p-4">
-        <Button 
-          variant="ghost" 
-          onClick={() => navigate(-1)}
-          className="text-muted-foreground hover:text-foreground"
-        >
+        <Button variant="ghost" onClick={() => navigate(-1)} className="text-muted-foreground hover:text-foreground">
           <ArrowLeft className="h-4 w-4 mr-2" />
           Retour
         </Button>
       </div>
-      
-      <div className="flex-1 flex items-center justify-center px-4">
+
+      <div className="flex-1 flex items-center justify-center px-4 pb-12">
         <div className="w-full max-w-md space-y-8">
           <div className="text-center">
             <h1 className="font-playfair text-3xl font-bold text-foreground">
               {isLogin ? "Connexion" : "Créer un compte"}
             </h1>
             <p className="mt-2 text-muted-foreground">
-              {isLogin 
-                ? "Accédez à votre compte et suivez vos commandes" 
+              {isLogin
+                ? "Accédez à votre compte et suivez vos commandes"
                 : "Rejoignez-nous pour une expérience personnalisée"}
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6 bg-card p-8 rounded-lg border">
+          <form onSubmit={handleSubmit} className="space-y-5 bg-card p-8 rounded-lg border">
+            {!isLogin && (
+              <>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <Label htmlFor="firstName">Prénom</Label>
+                    <Input
+                      id="firstName"
+                      value={firstName}
+                      onChange={(e) => { setFirstName(e.target.value); if (errors.firstName) setErrors({ ...errors, firstName: "" }); }}
+                      className={errors.firstName ? "border-destructive" : ""}
+                    />
+                    {errors.firstName && <p className="text-sm text-destructive">{errors.firstName}</p>}
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="lastName">Nom</Label>
+                    <Input
+                      id="lastName"
+                      value={lastName}
+                      onChange={(e) => { setLastName(e.target.value); if (errors.lastName) setErrors({ ...errors, lastName: "" }); }}
+                      className={errors.lastName ? "border-destructive" : ""}
+                    />
+                    {errors.lastName && <p className="text-sm text-destructive">{errors.lastName}</p>}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="address">Adresse complète</Label>
+                  <Textarea
+                    id="address"
+                    placeholder="N° et rue, code postal, ville"
+                    value={address}
+                    onChange={(e) => { setAddress(e.target.value); if (errors.address) setErrors({ ...errors, address: "" }); }}
+                    className={errors.address ? "border-destructive" : ""}
+                    rows={2}
+                  />
+                  {errors.address && <p className="text-sm text-destructive">{errors.address}</p>}
+                </div>
+              </>
+            )}
+
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -147,15 +179,10 @@ const Auth = () => {
                 type="email"
                 placeholder="votre@email.com"
                 value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                  if (errors.email) setErrors({ ...errors, email: undefined });
-                }}
+                onChange={(e) => { setEmail(e.target.value); if (errors.email) setErrors({ ...errors, email: "" }); }}
                 className={errors.email ? "border-destructive" : ""}
               />
-              {errors.email && (
-                <p className="text-sm text-destructive">{errors.email}</p>
-              )}
+              {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
             </div>
 
             <div className="space-y-2">
@@ -166,10 +193,7 @@ const Auth = () => {
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
                   value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value);
-                    if (errors.password) setErrors({ ...errors, password: undefined });
-                  }}
+                  onChange={(e) => { setPassword(e.target.value); if (errors.password) setErrors({ ...errors, password: "" }); }}
                   className={errors.password ? "border-destructive pr-10" : "pr-10"}
                 />
                 <button
@@ -180,9 +204,7 @@ const Auth = () => {
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
-              {errors.password && (
-                <p className="text-sm text-destructive">{errors.password}</p>
-              )}
+              {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
             </div>
 
             <Button type="submit" className="w-full" disabled={loading}>
@@ -192,15 +214,10 @@ const Auth = () => {
             <div className="text-center">
               <button
                 type="button"
-                onClick={() => {
-                  setIsLogin(!isLogin);
-                  setErrors({});
-                }}
+                onClick={() => { setIsLogin(!isLogin); setErrors({}); }}
                 className="text-sm text-primary hover:underline"
               >
-                {isLogin 
-                  ? "Pas encore de compte ? S'inscrire" 
-                  : "Déjà un compte ? Se connecter"}
+                {isLogin ? "Pas encore de compte ? S'inscrire" : "Déjà un compte ? Se connecter"}
               </button>
             </div>
           </form>
