@@ -8,6 +8,7 @@ import { fr } from "date-fns/locale";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { OrderStatusTimeline, StatusBadge, getStatusConfig } from "@/components/OrderStatusTimeline";
+import { getShortOrderRef } from "@/lib/orderRef";
 
 interface OrderItem {
   name: string;
@@ -95,6 +96,7 @@ const OrderHistory = () => {
     const shippingMethod = order.shipping_address?.method || { type: "free", label: "Livraison gratuite", price: 0 };
     const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
+    const shortRef = getShortOrderRef(order.paypal_order_id);
 
     const printWindow = window.open("", "_blank");
     if (!printWindow) {
@@ -218,13 +220,13 @@ const OrderHistory = () => {
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Reçu - Niger Chic Designs - ${order.paypal_order_id}</title>
+          <title>Reçu - Zeyani - ${shortRef}</title>
           <meta charset="utf-8">
           ${styles}
         </head>
         <body>
           <div class="header">
-            <div class="logo">Niger Chic Designs</div>
+            <div class="logo">Zeyani</div>
             <div class="subtitle">Bijoux artisanaux touaregs</div>
           </div>
 
@@ -233,7 +235,7 @@ const OrderHistory = () => {
           <div class="info-grid">
             <div class="info-box">
               <div class="info-label">Numéro de commande</div>
-              <div class="info-value">${order.paypal_order_id}</div>
+              <div class="info-value">${shortRef}</div>
             </div>
             <div class="info-box">
               <div class="info-label">Date de commande</div>
@@ -289,15 +291,15 @@ const OrderHistory = () => {
 
           <div class="legal">
             <p><strong>Informations légales</strong></p>
-            <p>Ce reçu fait foi de votre achat auprès de Niger Chic Designs.</p>
+            <p>Ce reçu fait foi de votre achat auprès de Zeyani.</p>
             <p>Conformément au RGPD, vos données personnelles sont conservées pendant 3 ans après réception de votre commande.</p>
             <p>Pour toute question concernant votre commande, contactez-nous via notre formulaire de contact.</p>
           </div>
 
           <div class="footer">
-            <p><strong>Niger Chic Designs</strong></p>
+            <p><strong>Zeyani</strong></p>
             <p>Bijoux artisanaux touaregs - Fait main au Niger</p>
-            <p>www.niger-chic-designs.lovable.app</p>
+            <p>www.zeyanii.com</p>
             <p style="margin-top: 15px;">Merci pour votre confiance !</p>
           </div>
         </body>
@@ -374,7 +376,7 @@ const OrderHistory = () => {
                           {format(new Date(order.created_at), "d MMMM yyyy 'à' HH:mm", { locale: fr })}
                         </div>
                         <p className="text-xs text-muted-foreground">
-                          Réf: {order.paypal_order_id}
+                          Réf: {getShortOrderRef(order.paypal_order_id)}
                         </p>
                       </div>
                       <StatusBadge status={order.status} />

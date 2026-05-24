@@ -4,6 +4,7 @@ import { Separator } from "@/components/ui/separator";
 import { Download, Printer, FileText } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { getShortOrderRef } from "@/lib/orderRef";
 
 interface ReceiptItem {
   name: string;
@@ -37,6 +38,7 @@ const OrderReceipt = ({
   payerEmail,
 }: OrderReceiptProps) => {
   const receiptRef = useRef<HTMLDivElement>(null);
+  const shortRef = getShortOrderRef(orderId);
 
   const handleDownload = () => {
     if (!receiptRef.current) return;
@@ -165,13 +167,13 @@ const OrderReceipt = ({
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Reçu - Niger Chic Designs - ${orderId}</title>
+          <title>Reçu - Zeyani - ${shortRef}</title>
           <meta charset="utf-8">
           ${styles}
         </head>
         <body>
           <div class="header">
-            <div class="logo">Niger Chic Designs</div>
+            <div class="logo">Zeyani</div>
             <div class="subtitle">Bijoux artisanaux touaregs</div>
           </div>
 
@@ -180,7 +182,7 @@ const OrderReceipt = ({
           <div class="info-grid">
             <div class="info-box">
               <div class="info-label">Numéro de commande</div>
-              <div class="info-value">${orderId}</div>
+              <div class="info-value">${shortRef}</div>
             </div>
             <div class="info-box">
               <div class="info-label">Date de commande</div>
@@ -236,15 +238,15 @@ const OrderReceipt = ({
 
           <div class="legal">
             <p><strong>Informations légales</strong></p>
-            <p>Ce reçu fait foi de votre achat auprès de Niger Chic Designs.</p>
+            <p>Ce reçu fait foi de votre achat auprès de Zeyani.</p>
             <p>Conformément au RGPD, vos données personnelles sont conservées pendant 3 ans après réception de votre commande.</p>
             <p>Pour toute question concernant votre commande, contactez-nous via notre formulaire de contact.</p>
           </div>
 
           <div class="footer">
-            <p><strong>Niger Chic Designs</strong></p>
+            <p><strong>Zeyani</strong></p>
             <p>Bijoux artisanaux touaregs - Fait main au Niger</p>
-            <p>www.niger-chic-designs.lovable.app</p>
+            <p>www.zeyanii.com</p>
             <p style="margin-top: 15px;">Merci pour votre confiance !</p>
           </div>
         </body>
@@ -287,7 +289,7 @@ const OrderReceipt = ({
       >
         {/* Header */}
         <div className="text-center mb-6 pb-4 border-b-2 border-primary">
-          <h2 className="text-2xl font-serif text-primary">Niger Chic Designs</h2>
+          <h2 className="text-2xl font-serif text-primary">Zeyani</h2>
           <p className="text-sm text-muted-foreground">Bijoux artisanaux touaregs</p>
         </div>
 
@@ -301,7 +303,7 @@ const OrderReceipt = ({
         <div className="grid grid-cols-2 gap-4 mb-6">
           <div className="bg-muted/50 rounded-md p-3">
             <p className="text-xs text-muted-foreground uppercase mb-1">N° de commande</p>
-            <p className="text-sm font-mono font-medium truncate">{orderId}</p>
+            <p className="text-sm font-mono font-medium truncate">{shortRef}</p>
           </div>
           <div className="bg-muted/50 rounded-md p-3">
             <p className="text-xs text-muted-foreground uppercase mb-1">Date</p>
@@ -362,7 +364,7 @@ const OrderReceipt = ({
 
         {/* Footer */}
         <div className="mt-6 pt-4 border-t text-center text-xs text-muted-foreground">
-          <p>Merci pour votre achat chez Niger Chic Designs</p>
+          <p>Merci pour votre achat chez Zeyani</p>
           <p className="mt-1">Ce reçu fait foi de votre commande</p>
         </div>
       </div>
