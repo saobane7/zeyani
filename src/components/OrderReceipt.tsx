@@ -38,6 +38,7 @@ const OrderReceipt = ({
   payerEmail,
 }: OrderReceiptProps) => {
   const receiptRef = useRef<HTMLDivElement>(null);
+  const shortRef = getShortOrderRef(orderId);
 
   const handleDownload = () => {
     if (!receiptRef.current) return;
