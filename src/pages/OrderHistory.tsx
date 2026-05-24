@@ -376,7 +376,7 @@ const OrderHistory = () => {
                           {format(new Date(order.created_at), "d MMMM yyyy 'à' HH:mm", { locale: fr })}
                         </div>
                         <p className="text-xs text-muted-foreground">
-                          Réf: {order.paypal_order_id}
+                          Réf: {getShortOrderRef(order.paypal_order_id)}
                         </p>
                       </div>
                       <StatusBadge status={order.status} />
