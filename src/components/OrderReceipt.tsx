@@ -289,7 +289,7 @@ const OrderReceipt = ({
       >
         {/* Header */}
         <div className="text-center mb-6 pb-4 border-b-2 border-primary">
-          <h2 className="text-2xl font-serif text-primary">Niger Chic Designs</h2>
+          <h2 className="text-2xl font-serif text-primary">Zeyani</h2>
           <p className="text-sm text-muted-foreground">Bijoux artisanaux touaregs</p>
         </div>
 
