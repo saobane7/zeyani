@@ -26,6 +26,8 @@ import EditProduct from "./pages/admin/EditProduct";
 import AdminOrders from "./pages/admin/Orders";
 import AdminSettings from "./pages/admin/Settings";
 import AdminLogin from "./pages/admin/Login";
+import AdminMessages from "./pages/admin/Messages";
+import AdminVideo from "./pages/admin/Video";
 import CookieBanner from "./components/CookieBanner";
 
 const queryClient = new QueryClient();
@@ -59,6 +61,8 @@ const App = () => (
                 <Route path="/admin/produits/:id" element={<EditProduct />} />
                 <Route path="/admin/commandes" element={<AdminOrders />} />
                 <Route path="/admin/parametres" element={<AdminSettings />} />
+                <Route path="/admin/messages" element={<AdminMessages />} />
+                <Route path="/admin/video" element={<AdminVideo />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
               <CookieBanner />

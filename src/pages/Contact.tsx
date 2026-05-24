@@ -22,18 +22,32 @@ const Contact = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
+
+    const { supabase } = await import("@/integrations/supabase/client");
+    const { error } = await supabase.from("contact_messages").insert({
+      name: formData.name.trim(),
+      email: formData.email.trim(),
+      subject: formData.subject.trim(),
+      message: formData.message.trim(),
+    });
+
     setIsSubmitting(false);
+
+    if (error) {
+      toast({
+        title: "Erreur",
+        description: "Impossible d'envoyer le message. Réessayez.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSubmitted(true);
     toast({
       title: "Message envoyé !",
       description: "Nous vous répondrons dans les plus brefs délais.",
     });
     setFormData({ name: "", email: "", subject: "", message: "" });
-    
     setTimeout(() => setIsSubmitted(false), 3000);
   };
 
@@ -47,8 +61,8 @@ const Contact = () => {
     {
       icon: Phone,
       title: "Téléphone",
-      content: "+33 1 23 45 67 89",
-      href: "tel:+33123456789",
+      content: "+33 7 80 17 01 58",
+      href: "tel:+33780170158",
     },
     {
       icon: MapPin,

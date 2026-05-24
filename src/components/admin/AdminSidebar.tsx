@@ -6,6 +6,8 @@ import {
   Settings,
   LogOut,
   ChevronLeft,
+  MessageSquare,
+  Video,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -16,6 +18,8 @@ const menuItems = [
   { icon: LayoutDashboard, label: 'Tableau de bord', path: '/admin' },
   { icon: Package, label: 'Produits', path: '/admin/produits' },
   { icon: ShoppingCart, label: 'Commandes', path: '/admin/commandes' },
+  { icon: MessageSquare, label: 'Messages', path: '/admin/messages' },
+  { icon: Video, label: 'Vidéo accueil', path: '/admin/video' },
   { icon: Settings, label: 'Paramètres', path: '/admin/parametres' },
 ];
 
