@@ -668,6 +668,33 @@ const AdminOrders = () => {
         </AlertDialogContent>
       </AlertDialog>
 
+      {/* Refund Confirmation */}
+      <AlertDialog open={!!refundTarget} onOpenChange={() => setRefundTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmer le remboursement</AlertDialogTitle>
+            <AlertDialogDescription>
+              Confirmez que le remboursement de {refundTarget?.total_amount.toFixed(2)} {refundTarget?.currency}
+              {' '}a bien été effectué au client. Une fois confirmé, le client verra dans son historique
+              que son remboursement a été traité.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-emerald-600 text-white hover:bg-emerald-700"
+              onClick={() => refundTarget && refundMutation.mutate(refundTarget.id)}
+              disabled={refundMutation.isPending}
+            >
+              {refundMutation.isPending && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+              Confirmer le remboursement
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+
+
 
       {/* Usage Guide Dialog */}
       <Dialog open={showGuide} onOpenChange={setShowGuide}>
