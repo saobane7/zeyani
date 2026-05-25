@@ -85,6 +85,8 @@ const AdminOrders = () => {
     newStatus: string;
   } | null>(null);
   const [showGuide, setShowGuide] = useState(false);
+  const [tab, setTab] = useState<'active' | 'archive'>('active');
+  const [deleteTarget, setDeleteTarget] = useState<Order | null>(null);
   const queryClient = useQueryClient();
 
   const { data: orders, isLoading } = useQuery({
@@ -98,6 +100,7 @@ const AdminOrders = () => {
       if (error) throw error;
       return data as Order[];
     },
+    refetchInterval: 60_000, // re-évalue la règle 24h
   });
 
   // Realtime: nouvelles commandes en direct
