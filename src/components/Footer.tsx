@@ -1,6 +1,9 @@
 import { Link } from "react-router-dom";
 import { Facebook, Instagram, MapPin, Phone, Mail, ArrowUp } from "lucide-react";
 import { Button } from "./ui/button";
+import { TikTokIcon } from "./icons/TikTokIcon";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
