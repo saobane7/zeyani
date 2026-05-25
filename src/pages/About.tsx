@@ -86,53 +86,57 @@ const About = () => {
             </motion.div>
 
             {/* Symbolism Section */}
-            <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center mb-16">
-              <motion.div
-                initial={{ opacity: 0, x: -30 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6 }}
-                className="order-2 lg:order-1"
-              >
-                <span className="text-gold-dark font-medium text-sm tracking-[0.25em] uppercase mb-4 block">
-                  Symbolisme
-                </span>
-                <h2 className="font-display text-3xl lg:text-4xl font-light text-foreground mb-6">
-                  Les quatre <span className="text-gradient-gold font-semibold">points cardinaux</span>
-                </h2>
-                <div className="space-y-4 text-muted-foreground leading-relaxed">
-                  <p>
-                    La croix touarègue représente les quatre points cardinaux : le nord, le sud, l'est 
-                    et l'ouest. Elle rappelle au porteur qu'il doit être capable de s'orienter dans le 
-                    désert, mais aussi dans la vie.
-                  </p>
-                  <p>
-                    C'est un symbole de <strong className="text-foreground">liberté</strong>, de 
-                    <strong className="text-foreground"> responsabilité</strong>, et de 
-                    <strong className="text-foreground"> protection</strong>.
-                  </p>
-                  <p>
-                    Traditionnellement, un père offrait une croix à son fils lorsqu'il atteignait l'âge 
-                    adulte. Ce geste marquait le passage vers l'autonomie et la capacité de tracer son 
-                    propre chemin à travers l'immensité du désert.
-                  </p>
-                </div>
-              </motion.div>
-              <motion.div
-                initial={{ opacity: 0, x: 30 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-                className="order-1 lg:order-2 relative"
-              >
-                <img
-                  src={aboutImage}
-                  alt="Bijoux Touareg authentiques"
-                  className="rounded-lg shadow-card w-full"
-                />
-                <div className="absolute -top-6 -right-6 w-24 h-24 bg-gold/10 rounded-lg -z-10" />
-              </motion.div>
-            </div>
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              className="mb-16"
+            >
+              <span className="text-gold-dark font-medium text-sm tracking-[0.25em] uppercase mb-4 block">
+                Symbolisme
+              </span>
+              <h2 className="font-display text-3xl lg:text-4xl font-light text-foreground mb-6">
+                Les quatre <span className="text-gradient-gold font-semibold">points cardinaux</span>
+              </h2>
+              <div className="space-y-4 text-muted-foreground leading-relaxed mb-12">
+                <p>
+                  La croix touarègue représente les quatre points cardinaux : le nord, le sud, l'est 
+                  et l'ouest. Elle rappelle au porteur qu'il doit être capable de s'orienter dans le 
+                  désert, mais aussi dans la vie.
+                </p>
+                <p>
+                  Traditionnellement, un père offrait une croix à son fils lorsqu'il atteignait l'âge 
+                  adulte. Ce geste marquait le passage vers l'autonomie et la capacité de tracer son 
+                  propre chemin à travers l'immensité du désert.
+                </p>
+              </div>
+
+              {/* Liberty, Responsibility, Protection Section */}
+              <div className="grid md:grid-cols-3 gap-6">
+                {[
+                  { title: "Liberté", description: "La croix incarne le droit de choisir sa propre voie dans l'immensité du désert et de la vie." },
+                  { title: "Responsabilité", description: "Elle rappelle au porteur qu'il doit porter le poids de ses décisions et honorer ses engagements." },
+                  { title: "Protection", description: "Portée contre la poitrine, elle protège le voyageur des périls du désert et des mauvais esprits." },
+                ].map((item, index) => (
+                  <motion.div
+                    key={item.title}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5, delay: index * 0.15 }}
+                    className="bg-primary rounded-lg p-8 text-center"
+                  >
+                    <h3 className="font-display text-2xl lg:text-3xl text-gradient-gold font-semibold mb-4">
+                      {item.title}
+                    </h3>
+                    <p className="text-cream/80 text-sm leading-relaxed">
+                      {item.description}
+                    </p>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
 
             {/* Varieties Section */}
             <motion.div
