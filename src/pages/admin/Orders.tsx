@@ -37,7 +37,8 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Search, Loader2, Eye, Info, ArrowRight, Trash2, Archive as ArchiveIcon } from 'lucide-react';
+import { Search, Loader2, Eye, Info, ArrowRight, Trash2, Archive as ArchiveIcon, BadgeCheck, AlertCircle } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
@@ -75,6 +76,9 @@ interface Order {
   shipping_address: any;
   created_at: string;
   received_at: string | null;
+  cancellation_reason: string | null;
+  cancelled_at: string | null;
+  refunded_at: string | null;
 }
 
 const AdminOrders = () => {
@@ -84,9 +88,11 @@ const AdminOrders = () => {
     order: Order;
     newStatus: string;
   } | null>(null);
+  const [cancellationReason, setCancellationReason] = useState('');
   const [showGuide, setShowGuide] = useState(false);
   const [tab, setTab] = useState<'active' | 'archive'>('active');
   const [deleteTarget, setDeleteTarget] = useState<Order | null>(null);
+  const [refundTarget, setRefundTarget] = useState<Order | null>(null);
   const queryClient = useQueryClient();
 
   const { data: orders, isLoading } = useQuery({
@@ -125,11 +131,15 @@ const AdminOrders = () => {
   }, [queryClient]);
 
   const updateStatusMutation = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: string }) => {
+    mutationFn: async ({ id, status, reason }: { id: string; status: string; reason?: string }) => {
       const updateData: any = { status };
       
       if (status === 'completed') {
         updateData.received_at = new Date().toISOString();
+      }
+      if (status === 'cancelled') {
+        updateData.cancelled_at = new Date().toISOString();
+        updateData.cancellation_reason = reason || null;
       }
 
       const { error } = await supabase
@@ -144,6 +154,7 @@ const AdminOrders = () => {
       const statusConfig = getStatusConfig(variables.status);
       toast.success(`Statut mis à jour: ${statusConfig.label}`);
       setStatusChangeDialog(null);
+      setCancellationReason('');
     },
     onError: (error) => {
       console.error('Error updating status:', error);
@@ -151,6 +162,24 @@ const AdminOrders = () => {
     },
   });
 
+  const refundMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('orders')
+        .update({ refunded_at: new Date().toISOString() } as any)
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
+      toast.success('Remboursement confirmé — le client en sera informé');
+      setRefundTarget(null);
+    },
+    onError: (error) => {
+      console.error('Error confirming refund:', error);
+      toast.error('Erreur lors de la confirmation du remboursement');
+    },
+  });
 
   const deleteOrderMutation = useMutation({
     mutationFn: async (id: string) => {
@@ -170,16 +199,21 @@ const AdminOrders = () => {
 
   const handleStatusChange = (order: Order, newStatus: string) => {
     if (order.status === newStatus) return;
+    setCancellationReason('');
     setStatusChangeDialog({ order, newStatus });
   };
 
   const confirmStatusChange = () => {
-    if (statusChangeDialog) {
-      updateStatusMutation.mutate({
-        id: statusChangeDialog.order.id,
-        status: statusChangeDialog.newStatus,
-      });
+    if (!statusChangeDialog) return;
+    if (statusChangeDialog.newStatus === 'cancelled' && !cancellationReason.trim()) {
+      toast.error('Merci de renseigner la raison de l\'annulation');
+      return;
     }
+    updateStatusMutation.mutate({
+      id: statusChangeDialog.order.id,
+      status: statusChangeDialog.newStatus,
+      reason: cancellationReason.trim(),
+    });
   };
 
   const matchesSearch = (order: Order) =>
@@ -337,7 +371,24 @@ const AdminOrders = () => {
                           </TableCell>
                         )}
                         <TableCell>
-                          <div className="flex gap-1 justify-end">
+                          <div className="flex gap-1 justify-end items-center">
+                            {order.status === 'cancelled' && (
+                              order.refunded_at ? (
+                                <span className="text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full inline-flex items-center gap-1">
+                                  <BadgeCheck className="h-3 w-3" /> Remboursé
+                                </span>
+                              ) : (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-8 text-emerald-700 border-emerald-300 hover:bg-emerald-50"
+                                  onClick={() => setRefundTarget(order)}
+                                >
+                                  <BadgeCheck className="h-4 w-4 mr-1" />
+                                  Marquer remboursé
+                                </Button>
+                              )
+                            )}
                             <Button
                               variant="ghost"
                               size="icon"
@@ -537,25 +588,46 @@ const AdminOrders = () => {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Confirmer le changement de statut</AlertDialogTitle>
-            <AlertDialogDescription asChild>
-              <div className="space-y-4">
-                <p>Voulez-vous vraiment changer le statut de cette commande ?</p>
-                {statusChangeDialog && (
-                  <div className="flex items-center justify-center gap-4 py-4">
-                    <StatusBadge status={statusChangeDialog.order.status} size="lg" />
-                    <ArrowRight className="h-5 w-5 text-muted-foreground" />
-                    <StatusBadge status={statusChangeDialog.newStatus} size="lg" />
-                  </div>
-                )}
-                {statusChangeDialog?.newStatus === 'completed' && (
-                  <p className="text-sm text-amber-600 bg-amber-50 p-3 rounded-lg">
-                    ⚠️ Marquer comme "Livrée" déclenchera le compte à rebours RGPD de 3 ans 
-                    pour la conservation des données.
-                  </p>
-                )}
-              </div>
+            <AlertDialogDescription>
+              Voulez-vous vraiment changer le statut de cette commande ?
             </AlertDialogDescription>
           </AlertDialogHeader>
+
+          <div className="space-y-4">
+            {statusChangeDialog && (
+              <div className="flex items-center justify-center gap-4 py-2">
+                <StatusBadge status={statusChangeDialog.order.status} size="lg" />
+                <ArrowRight className="h-5 w-5 text-muted-foreground" />
+                <StatusBadge status={statusChangeDialog.newStatus} size="lg" />
+              </div>
+            )}
+            {statusChangeDialog?.newStatus === 'completed' && (
+              <p className="text-sm text-amber-600 bg-amber-50 p-3 rounded-lg">
+                ⚠️ Marquer comme "Livrée" déclenchera le compte à rebours RGPD de 3 ans
+                pour la conservation des données.
+              </p>
+            )}
+            {statusChangeDialog?.newStatus === 'cancelled' && (
+              <div className="space-y-2">
+                <label className="text-sm font-medium flex items-center gap-2">
+                  <AlertCircle className="h-4 w-4 text-red-600" />
+                  Raison de l'annulation <span className="text-red-600">*</span>
+                </label>
+                <Textarea
+                  value={cancellationReason}
+                  onChange={(e) => setCancellationReason(e.target.value)}
+                  placeholder="Ex : rupture de stock, demande du client, erreur d'adresse…"
+                  rows={3}
+                  maxLength={500}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Cette raison sera visible par le client dans son historique de commandes.
+                  Vous pourrez ensuite confirmer le remboursement depuis l'archive.
+                </p>
+              </div>
+            )}
+          </div>
+
           <AlertDialogFooter>
             <AlertDialogCancel>Annuler</AlertDialogCancel>
             <AlertDialogAction 
@@ -595,6 +667,33 @@ const AdminOrders = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Refund Confirmation */}
+      <AlertDialog open={!!refundTarget} onOpenChange={() => setRefundTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmer le remboursement</AlertDialogTitle>
+            <AlertDialogDescription>
+              Confirmez que le remboursement de {refundTarget?.total_amount.toFixed(2)} {refundTarget?.currency}
+              {' '}a bien été effectué au client. Une fois confirmé, le client verra dans son historique
+              que son remboursement a été traité.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-emerald-600 text-white hover:bg-emerald-700"
+              onClick={() => refundTarget && refundMutation.mutate(refundTarget.id)}
+              disabled={refundMutation.isPending}
+            >
+              {refundMutation.isPending && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+              Confirmer le remboursement
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+
 
 
       {/* Usage Guide Dialog */}

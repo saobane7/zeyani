@@ -46,6 +46,8 @@ export type Database = {
       }
       orders: {
         Row: {
+          cancellation_reason: string | null
+          cancelled_at: string | null
           created_at: string
           currency: string
           expires_at: string | null
@@ -56,6 +58,7 @@ export type Database = {
           payment_proof_url: string | null
           paypal_order_id: string | null
           received_at: string | null
+          refunded_at: string | null
           shipping_address: Json | null
           status: string
           total_amount: number
@@ -63,6 +66,8 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
           created_at?: string
           currency?: string
           expires_at?: string | null
@@ -73,6 +78,7 @@ export type Database = {
           payment_proof_url?: string | null
           paypal_order_id?: string | null
           received_at?: string | null
+          refunded_at?: string | null
           shipping_address?: Json | null
           status?: string
           total_amount: number
@@ -80,6 +86,8 @@ export type Database = {
           user_id: string
         }
         Update: {
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
           created_at?: string
           currency?: string
           expires_at?: string | null
@@ -90,6 +98,7 @@ export type Database = {
           payment_proof_url?: string | null
           paypal_order_id?: string | null
           received_at?: string | null
+          refunded_at?: string | null
           shipping_address?: Json | null
           status?: string
           total_amount?: number
