@@ -23,7 +23,10 @@ const AdminDashboard = () => {
         .from('orders')
         .select('total_amount, status', { count: 'exact' });
       
-      const totalRevenue = data?.reduce((sum, order) => sum + Number(order.total_amount), 0) || 0;
+      // Le CA exclut les commandes annulées
+      const totalRevenue = data
+        ?.filter(o => o.status !== 'cancelled')
+        .reduce((sum, order) => sum + Number(order.total_amount), 0) || 0;
       const completedOrders = data?.filter(o => o.status === 'completed').length || 0;
       
       return { 
