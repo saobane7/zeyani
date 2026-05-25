@@ -25,6 +25,9 @@ interface Order {
   items: unknown;
   created_at: string;
   received_at: string | null;
+  cancellation_reason: string | null;
+  cancelled_at: string | null;
+  refunded_at: string | null;
   shipping_address: {
     method?: {
       type: string;
