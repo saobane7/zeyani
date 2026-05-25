@@ -184,6 +184,62 @@ const AdminSettings = () => {
               </form>
             </CardContent>
           </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Réseaux sociaux</CardTitle>
+              <CardDescription>
+                Renseignez le lien public de chaque réseau. L'icône s'affichera dans le pied de page du site.
+                Laissez vide ou cliquez sur la corbeille pour retirer un réseau.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              {([
+                { key: 'facebook' as const, label: 'Facebook', Icon: Facebook, placeholder: 'https://facebook.com/votrepage' },
+                { key: 'instagram' as const, label: 'Instagram', Icon: Instagram, placeholder: 'https://instagram.com/votrecompte' },
+                { key: 'tiktok' as const, label: 'TikTok', Icon: TikTokIcon, placeholder: 'https://tiktok.com/@votrecompte' },
+              ]).map(({ key, label, Icon, placeholder }) => (
+                <div key={key} className="space-y-2">
+                  <Label className="flex items-center gap-2">
+                    <Icon className="h-4 w-4" />
+                    {label}
+                    {socials[key] && (
+                      <span className="text-xs text-emerald-600">● actif</span>
+                    )}
+                  </Label>
+                  <div className="flex gap-2">
+                    <Input
+                      type="url"
+                      value={socials[key]}
+                      placeholder={placeholder}
+                      onChange={(e) => setSocials({ ...socials, [key]: e.target.value })}
+                    />
+                    <Button
+                      type="button"
+                      onClick={() => handleSaveSocial(key)}
+                      disabled={savingSocial === key}
+                    >
+                      {savingSocial === key ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Save className="h-4 w-4" />
+                      )}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="text-destructive hover:text-destructive"
+                      onClick={() => handleRemoveSocial(key)}
+                      disabled={savingSocial === key || !socials[key]}
+                      title="Retirer ce réseau du site"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
         </div>
       </div>
     </AdminLayout>
