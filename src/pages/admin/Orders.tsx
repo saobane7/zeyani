@@ -87,6 +87,27 @@ const AdminOrders = () => {
     },
   });
 
+  // Realtime: nouvelles commandes en direct
+  useEffect(() => {
+    const channel = supabase
+      .channel('admin-orders-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'orders' },
+        (payload) => {
+          queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
+          if (payload.eventType === 'INSERT') {
+            toast.success('Nouvelle commande reçue !');
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
+
   const updateStatusMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
       const updateData: any = { status };
