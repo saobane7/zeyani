@@ -249,13 +249,83 @@ const OrderReceipt = ({
       </html>
     `;
 
+    if (isMobile) {
+      // Sur mobile : ouvrir dans un iframe caché puis déclencher l'impression/sauvegarde PDF
+      // sans avoir besoin d'autoriser les popups
+      const iframe = document.createElement("iframe");
+      iframe.style.position = "fixed";
+      iframe.style.right = "0";
+      iframe.style.bottom = "0";
+      iframe.style.width = "0";
+      iframe.style.height = "0";
+      iframe.style.border = "0";
+      document.body.appendChild(iframe);
+
+      const idoc = iframe.contentDocument || iframe.contentWindow?.document;
+      if (!idoc) {
+        // Fallback : data URL dans le même onglet
+        const blob = new Blob([content], { type: "text/html" });
+        const url = URL.createObjectURL(blob);
+        window.location.href = url;
+        return;
+      }
+      idoc.open();
+      idoc.write(content);
+      idoc.close();
+
+      const triggerPrint = () => {
+        try {
+          iframe.contentWindow?.focus();
+          iframe.contentWindow?.print();
+        } catch (e) {
+          console.error(e);
+        }
+        // Nettoyer après un délai
+        setTimeout(() => {
+          document.body.removeChild(iframe);
+        }, 1000);
+      };
+
+      if (iframe.contentWindow) {
+        iframe.contentWindow.onload = triggerPrint;
+        // Au cas où onload ne se déclenche pas
+        setTimeout(triggerPrint, 500);
+      }
+      return;
+    }
+
+    // Desktop : ouvrir dans une nouvelle fenêtre
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) {
+      // Fallback si popups bloqués : utiliser un iframe
+      const iframe = document.createElement("iframe");
+      iframe.style.position = "fixed";
+      iframe.style.right = "0";
+      iframe.style.bottom = "0";
+      iframe.style.width = "0";
+      iframe.style.height = "0";
+      iframe.style.border = "0";
+      document.body.appendChild(iframe);
+      const idoc = iframe.contentDocument || iframe.contentWindow?.document;
+      if (idoc) {
+        idoc.open();
+        idoc.write(content);
+        idoc.close();
+        setTimeout(() => {
+          iframe.contentWindow?.focus();
+          iframe.contentWindow?.print();
+          setTimeout(() => document.body.removeChild(iframe), 1000);
+        }, 500);
+      }
+      return;
+    }
+
     printWindow.document.write(content);
     printWindow.document.close();
-    
-    // Wait for content to load then trigger print/save as PDF
     printWindow.onload = () => {
       printWindow.print();
     };
+
   };
 
   const handlePrint = () => {
