@@ -408,6 +408,38 @@ const OrderHistory = () => {
                   {/* Expanded Details */}
                   {isExpanded && (
                     <div className="border-t px-6 py-6 space-y-6 bg-muted/20">
+                      {/* Cancellation / refund info */}
+                      {order.status === 'cancelled' && (
+                        <div className="bg-red-50 border border-red-200 rounded-lg p-4 space-y-3">
+                          <h4 className="font-medium text-red-700 flex items-center gap-2">
+                            ❌ Commande annulée
+                          </h4>
+                          {order.cancellation_reason && (
+                            <div className="text-sm">
+                              <p className="font-medium text-foreground mb-1">Raison :</p>
+                              <p className="text-muted-foreground whitespace-pre-line">
+                                {order.cancellation_reason}
+                              </p>
+                            </div>
+                          )}
+                          {order.refunded_at ? (
+                            <div className="text-sm bg-emerald-50 border border-emerald-200 rounded p-3 text-emerald-800">
+                              ✅ <strong>Remboursement effectué</strong> le{' '}
+                              {format(new Date(order.refunded_at), "d MMMM yyyy 'à' HH:mm", { locale: fr })}.
+                              <p className="text-xs mt-1 text-emerald-700">
+                                Le montant a été renvoyé sur votre moyen de paiement.
+                                Le délai d'apparition dépend de votre banque (jusqu'à 5 jours ouvrés).
+                              </p>
+                            </div>
+                          ) : (
+                            <div className="text-sm bg-amber-50 border border-amber-200 rounded p-3 text-amber-800">
+                              ⏳ <strong>Remboursement en cours de traitement.</strong> Vous serez
+                              notifié(e) ici dès qu'il sera effectué.
+                            </div>
+                          )}
+                        </div>
+                      )}
+
                       {/* Order Status Timeline */}
                       <div className="bg-background rounded-lg p-4 border">
                         <h4 className="font-medium mb-4 text-center">Suivi de votre commande</h4>
