@@ -76,6 +76,9 @@ interface Order {
   shipping_address: any;
   created_at: string;
   received_at: string | null;
+  cancellation_reason: string | null;
+  cancelled_at: string | null;
+  refunded_at: string | null;
 }
 
 const AdminOrders = () => {
