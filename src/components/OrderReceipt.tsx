@@ -43,12 +43,8 @@ const OrderReceipt = ({
   const handleDownload = () => {
     if (!receiptRef.current) return;
 
-    // Create a printable version
-    const printWindow = window.open("", "_blank");
-    if (!printWindow) {
-      alert("Veuillez autoriser les popups pour télécharger le reçu.");
-      return;
-    }
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
 
     const styles = `
       <style>
