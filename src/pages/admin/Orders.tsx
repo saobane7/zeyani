@@ -236,100 +236,137 @@ const AdminOrders = () => {
           })}
         </div>
 
-        <div className="flex items-center gap-4">
-          <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Rechercher par ID ou email..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-        </div>
+        <Tabs value={tab} onValueChange={(v) => setTab(v as 'active' | 'archive')}>
+          <div className="flex flex-col md:flex-row md:items-center gap-4 justify-between">
+            <TabsList>
+              <TabsTrigger value="active">
+                Commandes actives ({activeOrders?.length ?? 0})
+              </TabsTrigger>
+              <TabsTrigger value="archive">
+                <ArchiveIcon className="h-4 w-4 mr-1" />
+                Archive ({archivedOrders?.length ?? 0})
+              </TabsTrigger>
+            </TabsList>
 
-        {isLoading ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            <div className="relative flex-1 max-w-sm">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Rechercher par ID ou email..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-10"
+              />
+            </div>
           </div>
-        ) : (
-          <div className="border rounded-lg">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Commande</TableHead>
-                  <TableHead>Client</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Montant</TableHead>
-                  <TableHead>Statut actuel</TableHead>
-                  <TableHead>Changer le statut</TableHead>
-                  <TableHead className="w-12"></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredOrders?.length === 0 ? (
+
+          {tab === 'archive' && (
+            <p className="text-sm text-muted-foreground mt-3">
+              Les commandes annulées et celles livrées depuis plus de 24 h sont automatiquement archivées.
+              Vous pouvez supprimer définitivement n'importe quelle commande archivée.
+            </p>
+          )}
+
+          {isLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+          ) : (
+            <div className="border rounded-lg mt-4">
+              <Table>
+                <TableHeader>
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">
-                      Aucune commande trouvée
-                    </TableCell>
+                    <TableHead>Commande</TableHead>
+                    <TableHead>Client</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Montant</TableHead>
+                    <TableHead>Statut actuel</TableHead>
+                    {tab === 'active' && <TableHead>Changer le statut</TableHead>}
+                    <TableHead className="w-24"></TableHead>
                   </TableRow>
-                ) : (
-                  filteredOrders?.map((order) => (
-                    <TableRow key={order.id}>
-                      <TableCell>
-                        <p className="font-mono text-sm">{(order.paypal_order_id || order.id).slice(0, 15)}...</p>
-                        <p className="text-xs text-muted-foreground capitalize">{order.payment_method}</p>
-                      </TableCell>
-                      <TableCell>{order.payer_email || 'N/A'}</TableCell>
-                      <TableCell>
-                        {format(new Date(order.created_at), 'dd MMM yyyy', { locale: fr })}
-                      </TableCell>
-                      <TableCell>
-                        {order.total_amount.toFixed(2)} {order.currency}
-                      </TableCell>
-                      <TableCell>
-                        <StatusBadge status={order.status} />
-                      </TableCell>
-                      <TableCell>
-                        <Select
-                          value={order.status}
-                          onValueChange={(value) => handleStatusChange(order, value)}
-                        >
-                          <SelectTrigger className="w-40">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {ORDER_STATUSES.map((status) => {
-                              const Icon = status.icon;
-                              return (
-                                <SelectItem key={status.value} value={status.value}>
-                                  <div className="flex items-center gap-2">
-                                    <Icon className={`h-4 w-4 ${status.color}`} />
-                                    {status.label}
-                                  </div>
-                                </SelectItem>
-                              );
-                            })}
-                          </SelectContent>
-                        </Select>
-                      </TableCell>
-                      <TableCell>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => setSelectedOrder(order)}
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
+                </TableHeader>
+                <TableBody>
+                  {displayedOrders?.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">
+                        {tab === 'archive' ? 'Aucune commande archivée' : 'Aucune commande trouvée'}
                       </TableCell>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        )}
+                  ) : (
+                    displayedOrders?.map((order) => (
+                      <TableRow key={order.id}>
+                        <TableCell>
+                          <p className="font-mono text-sm">{(order.paypal_order_id || order.id).slice(0, 15)}...</p>
+                          <p className="text-xs text-muted-foreground capitalize">{order.payment_method}</p>
+                        </TableCell>
+                        <TableCell>{order.payer_email || 'N/A'}</TableCell>
+                        <TableCell>
+                          {format(new Date(order.created_at), 'dd MMM yyyy', { locale: fr })}
+                        </TableCell>
+                        <TableCell>
+                          {order.total_amount.toFixed(2)} {order.currency}
+                          {order.status === 'cancelled' && (
+                            <p className="text-xs text-red-600">Exclue du CA</p>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <StatusBadge status={order.status} />
+                        </TableCell>
+                        {tab === 'active' && (
+                          <TableCell>
+                            <Select
+                              value={order.status}
+                              onValueChange={(value) => handleStatusChange(order, value)}
+                            >
+                              <SelectTrigger className="w-40">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {ORDER_STATUSES.map((status) => {
+                                  const Icon = status.icon;
+                                  return (
+                                    <SelectItem key={status.value} value={status.value}>
+                                      <div className="flex items-center gap-2">
+                                        <Icon className={`h-4 w-4 ${status.color}`} />
+                                        {status.label}
+                                      </div>
+                                    </SelectItem>
+                                  );
+                                })}
+                              </SelectContent>
+                            </Select>
+                          </TableCell>
+                        )}
+                        <TableCell>
+                          <div className="flex gap-1 justify-end">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => setSelectedOrder(order)}
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            {tab === 'archive' && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="text-destructive hover:text-destructive"
+                                onClick={() => setDeleteTarget(order)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </Tabs>
       </div>
+
 
       {/* Order Details Dialog */}
       <Dialog open={!!selectedOrder} onOpenChange={() => setSelectedOrder(null)}>
