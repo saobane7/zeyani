@@ -3,7 +3,6 @@ import Footer from "@/components/Footer";
 import AboutSection from "@/components/AboutSection";
 import { motion } from "framer-motion";
 import hommeTouaregImg from "@/assets/homme-touareg.webp";
-import aboutImage from "@/assets/about-jewelry.jpg";
 
 const About = () => {
   return (
