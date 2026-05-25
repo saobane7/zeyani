@@ -36,7 +36,8 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Search, Loader2, Eye, Info, ArrowRight } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Search, Loader2, Eye, Info, ArrowRight, Trash2, Archive as ArchiveIcon } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
@@ -47,6 +48,18 @@ import {
   OrderStatusTimeline, 
   StatusBadge 
 } from '@/components/OrderStatusTimeline';
+
+// Une commande est archivée si :
+//  - elle est annulée, OU
+//  - elle est livrée depuis plus de 24 h
+const isArchived = (order: { status: string; received_at: string | null }) => {
+  if (order.status === 'cancelled') return true;
+  if (order.status === 'completed' && order.received_at) {
+    const ageMs = Date.now() - new Date(order.received_at).getTime();
+    return ageMs >= 24 * 60 * 60 * 1000;
+  }
+  return false;
+};
 
 interface Order {
   id: string;
