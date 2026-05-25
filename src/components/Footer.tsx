@@ -31,13 +31,39 @@ const Footer = () => {
     ],
   };
 
+  const [socials, setSocials] = useState<{ facebook: string; instagram: string; tiktok: string }>({
+    facebook: "",
+    instagram: "",
+    tiktok: "",
+  });
+
+  useEffect(() => {
+    supabase
+      .from("site_settings")
+      .select("value")
+      .eq("key", "social_links")
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data?.value) {
+          const v = data.value as any;
+          setSocials({
+            facebook: v.facebook || "",
+            instagram: v.instagram || "",
+            tiktok: v.tiktok || "",
+          });
+        }
+      });
+  }, []);
+
   const socialLinks = [
-    { icon: Facebook, href: "#", label: "Facebook" },
-    { icon: Instagram, href: "#", label: "Instagram" },
-  ];
+    { icon: Facebook, href: socials.facebook, label: "Facebook" },
+    { icon: Instagram, href: socials.instagram, label: "Instagram" },
+    { icon: TikTokIcon, href: socials.tiktok, label: "TikTok" },
+  ].filter((s) => s.href && s.href.trim() !== "");
 
   return (
     <footer id="contact" className="bg-obsidian text-cream relative">
+
       {/* Scroll to top button */}
       <Button
         variant="ghost"
