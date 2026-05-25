@@ -109,18 +109,22 @@ const Footer = () => {
             </div>
 
             {/* Social Links */}
-            <div className="flex gap-3 mt-6">
-              {socialLinks.map((social) => (
-                <a
-                  key={social.label}
-                  href={social.href}
-                  aria-label={social.label}
-                  className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-cream/10 hover:bg-gold flex items-center justify-center transition-colors duration-300"
-                >
-                  <social.icon className="h-4 w-4" />
-                </a>
-              ))}
-            </div>
+            {socialLinks.length > 0 && (
+              <div className="flex gap-3 mt-6">
+                {socialLinks.map((social) => (
+                  <a
+                    key={social.label}
+                    href={social.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={social.label}
+                    className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-cream/10 hover:bg-gold flex items-center justify-center transition-colors duration-300"
+                  >
+                    <social.icon className="h-4 w-4" />
+                  </a>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Boutique */}
