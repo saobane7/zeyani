@@ -88,9 +88,11 @@ const AdminOrders = () => {
     order: Order;
     newStatus: string;
   } | null>(null);
+  const [cancellationReason, setCancellationReason] = useState('');
   const [showGuide, setShowGuide] = useState(false);
   const [tab, setTab] = useState<'active' | 'archive'>('active');
   const [deleteTarget, setDeleteTarget] = useState<Order | null>(null);
+  const [refundTarget, setRefundTarget] = useState<Order | null>(null);
   const queryClient = useQueryClient();
 
   const { data: orders, isLoading } = useQuery({
