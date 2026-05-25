@@ -1,6 +1,9 @@
 import { Link } from "react-router-dom";
 import { Facebook, Instagram, MapPin, Phone, Mail, ArrowUp } from "lucide-react";
 import { Button } from "./ui/button";
+import { TikTokIcon } from "./icons/TikTokIcon";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -28,13 +31,39 @@ const Footer = () => {
     ],
   };
 
+  const [socials, setSocials] = useState<{ facebook: string; instagram: string; tiktok: string }>({
+    facebook: "",
+    instagram: "",
+    tiktok: "",
+  });
+
+  useEffect(() => {
+    supabase
+      .from("site_settings")
+      .select("value")
+      .eq("key", "social_links")
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data?.value) {
+          const v = data.value as any;
+          setSocials({
+            facebook: v.facebook || "",
+            instagram: v.instagram || "",
+            tiktok: v.tiktok || "",
+          });
+        }
+      });
+  }, []);
+
   const socialLinks = [
-    { icon: Facebook, href: "#", label: "Facebook" },
-    { icon: Instagram, href: "#", label: "Instagram" },
-  ];
+    { icon: Facebook, href: socials.facebook, label: "Facebook" },
+    { icon: Instagram, href: socials.instagram, label: "Instagram" },
+    { icon: TikTokIcon, href: socials.tiktok, label: "TikTok" },
+  ].filter((s) => s.href && s.href.trim() !== "");
 
   return (
     <footer id="contact" className="bg-obsidian text-cream relative">
+
       {/* Scroll to top button */}
       <Button
         variant="ghost"
@@ -80,18 +109,22 @@ const Footer = () => {
             </div>
 
             {/* Social Links */}
-            <div className="flex gap-3 mt-6">
-              {socialLinks.map((social) => (
-                <a
-                  key={social.label}
-                  href={social.href}
-                  aria-label={social.label}
-                  className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-cream/10 hover:bg-gold flex items-center justify-center transition-colors duration-300"
-                >
-                  <social.icon className="h-4 w-4" />
-                </a>
-              ))}
-            </div>
+            {socialLinks.length > 0 && (
+              <div className="flex gap-3 mt-6">
+                {socialLinks.map((social) => (
+                  <a
+                    key={social.label}
+                    href={social.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={social.label}
+                    className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-cream/10 hover:bg-gold flex items-center justify-center transition-colors duration-300"
+                  >
+                    <social.icon className="h-4 w-4" />
+                  </a>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Boutique */}

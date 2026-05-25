@@ -4,10 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Facebook, Instagram, Trash2, Save } from 'lucide-react';
+import { TikTokIcon } from '@/components/icons/TikTokIcon';
 
 const AdminSettings = () => {
   const { user } = useAuth();
@@ -15,6 +16,74 @@ const AdminSettings = () => {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isChangingPassword, setIsChangingPassword] = useState(false);
+
+  // --- Réseaux sociaux ---
+  const [socials, setSocials] = useState<{ facebook: string; instagram: string; tiktok: string }>({
+    facebook: '',
+    instagram: '',
+    tiktok: '',
+  });
+  const [savingSocial, setSavingSocial] = useState<string | null>(null);
+
+  useEffect(() => {
+    supabase
+      .from('site_settings')
+      .select('value')
+      .eq('key', 'social_links')
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data?.value) {
+          const v = data.value as any;
+          setSocials({
+            facebook: v.facebook || '',
+            instagram: v.instagram || '',
+            tiktok: v.tiktok || '',
+          });
+        }
+      });
+  }, []);
+
+  const persistSocials = async (next: typeof socials) => {
+    const { error } = await supabase
+      .from('site_settings')
+      .upsert({ key: 'social_links', value: next as any }, { onConflict: 'key' });
+    if (error) throw error;
+  };
+
+  const handleSaveSocial = async (key: 'facebook' | 'instagram' | 'tiktok') => {
+    setSavingSocial(key);
+    try {
+      const value = socials[key].trim();
+      if (value && !/^https?:\/\//i.test(value)) {
+        toast.error("Le lien doit commencer par http:// ou https://");
+        return;
+      }
+      const next = { ...socials, [key]: value };
+      await persistSocials(next);
+      setSocials(next);
+      toast.success('Lien enregistré');
+    } catch (e) {
+      console.error(e);
+      toast.error("Erreur lors de l'enregistrement");
+    } finally {
+      setSavingSocial(null);
+    }
+  };
+
+  const handleRemoveSocial = async (key: 'facebook' | 'instagram' | 'tiktok') => {
+    setSavingSocial(key);
+    try {
+      const next = { ...socials, [key]: '' };
+      await persistSocials(next);
+      setSocials(next);
+      toast.success('Réseau retiré du site');
+    } catch (e) {
+      console.error(e);
+      toast.error('Erreur lors de la suppression');
+    } finally {
+      setSavingSocial(null);
+    }
+  };
 
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -113,6 +182,62 @@ const AdminSettings = () => {
                   Mettre à jour le mot de passe
                 </Button>
               </form>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Réseaux sociaux</CardTitle>
+              <CardDescription>
+                Renseignez le lien public de chaque réseau. L'icône s'affichera dans le pied de page du site.
+                Laissez vide ou cliquez sur la corbeille pour retirer un réseau.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              {([
+                { key: 'facebook' as const, label: 'Facebook', Icon: Facebook, placeholder: 'https://facebook.com/votrepage' },
+                { key: 'instagram' as const, label: 'Instagram', Icon: Instagram, placeholder: 'https://instagram.com/votrecompte' },
+                { key: 'tiktok' as const, label: 'TikTok', Icon: TikTokIcon, placeholder: 'https://tiktok.com/@votrecompte' },
+              ]).map(({ key, label, Icon, placeholder }) => (
+                <div key={key} className="space-y-2">
+                  <Label className="flex items-center gap-2">
+                    <Icon className="h-4 w-4" />
+                    {label}
+                    {socials[key] && (
+                      <span className="text-xs text-emerald-600">● actif</span>
+                    )}
+                  </Label>
+                  <div className="flex gap-2">
+                    <Input
+                      type="url"
+                      value={socials[key]}
+                      placeholder={placeholder}
+                      onChange={(e) => setSocials({ ...socials, [key]: e.target.value })}
+                    />
+                    <Button
+                      type="button"
+                      onClick={() => handleSaveSocial(key)}
+                      disabled={savingSocial === key}
+                    >
+                      {savingSocial === key ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Save className="h-4 w-4" />
+                      )}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="text-destructive hover:text-destructive"
+                      onClick={() => handleRemoveSocial(key)}
+                      disabled={savingSocial === key || !socials[key]}
+                      title="Retirer ce réseau du site"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
             </CardContent>
           </Card>
         </div>
