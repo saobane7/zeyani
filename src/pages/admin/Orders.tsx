@@ -151,19 +151,6 @@ const AdminOrders = () => {
     },
   });
 
-  const handleStatusChange = (order: Order, newStatus: string) => {
-    if (order.status === newStatus) return;
-    setStatusChangeDialog({ order, newStatus });
-  };
-
-  const confirmStatusChange = () => {
-    if (statusChangeDialog) {
-      updateStatusMutation.mutate({
-        id: statusChangeDialog.order.id,
-        status: statusChangeDialog.newStatus,
-      });
-    }
-  };
 
   const deleteOrderMutation = useMutation({
     mutationFn: async (id: string) => {
