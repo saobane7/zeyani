@@ -36,7 +36,8 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Search, Loader2, Eye, Info, ArrowRight } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Search, Loader2, Eye, Info, ArrowRight, Trash2, Archive as ArchiveIcon } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
@@ -47,6 +48,18 @@ import {
   OrderStatusTimeline, 
   StatusBadge 
 } from '@/components/OrderStatusTimeline';
+
+// Une commande est archivée si :
+//  - elle est annulée, OU
+//  - elle est livrée depuis plus de 24 h
+const isArchived = (order: { status: string; received_at: string | null }) => {
+  if (order.status === 'cancelled') return true;
+  if (order.status === 'completed' && order.received_at) {
+    const ageMs = Date.now() - new Date(order.received_at).getTime();
+    return ageMs >= 24 * 60 * 60 * 1000;
+  }
+  return false;
+};
 
 interface Order {
   id: string;
@@ -72,6 +85,8 @@ const AdminOrders = () => {
     newStatus: string;
   } | null>(null);
   const [showGuide, setShowGuide] = useState(false);
+  const [tab, setTab] = useState<'active' | 'archive'>('active');
+  const [deleteTarget, setDeleteTarget] = useState<Order | null>(null);
   const queryClient = useQueryClient();
 
   const { data: orders, isLoading } = useQuery({
@@ -85,6 +100,7 @@ const AdminOrders = () => {
       if (error) throw error;
       return data as Order[];
     },
+    refetchInterval: 60_000, // re-évalue la règle 24h
   });
 
   // Realtime: nouvelles commandes en direct
@@ -135,6 +151,23 @@ const AdminOrders = () => {
     },
   });
 
+
+  const deleteOrderMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('orders').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
+      toast.success('Commande supprimée définitivement');
+      setDeleteTarget(null);
+    },
+    onError: (error) => {
+      console.error('Error deleting order:', error);
+      toast.error('Erreur lors de la suppression');
+    },
+  });
+
   const handleStatusChange = (order: Order, newStatus: string) => {
     if (order.status === newStatus) return;
     setStatusChangeDialog({ order, newStatus });
@@ -149,20 +182,23 @@ const AdminOrders = () => {
     }
   };
 
-  const filteredOrders = orders?.filter(
-    (order) =>
-      (order.paypal_order_id?.toLowerCase().includes(search.toLowerCase()) ?? false) ||
-      order.id.toLowerCase().includes(search.toLowerCase()) ||
-      order.payer_email?.toLowerCase().includes(search.toLowerCase())
-  );
+  const matchesSearch = (order: Order) =>
+    (order.paypal_order_id?.toLowerCase().includes(search.toLowerCase()) ?? false) ||
+    order.id.toLowerCase().includes(search.toLowerCase()) ||
+    (order.payer_email?.toLowerCase().includes(search.toLowerCase()) ?? false);
 
-  // Stats
+  const activeOrders = orders?.filter((o) => !isArchived(o) && matchesSearch(o));
+  const archivedOrders = orders?.filter((o) => isArchived(o) && matchesSearch(o));
+  const displayedOrders = tab === 'active' ? activeOrders : archivedOrders;
+
+  // Stats : on ne compte que les commandes actives (non archivées)
+  const active = orders?.filter((o) => !isArchived(o)) || [];
   const stats = {
-    pending: orders?.filter((o) => o.status === 'pending').length || 0,
-    paid: orders?.filter((o) => o.status === 'paid').length || 0,
-    processing: orders?.filter((o) => o.status === 'processing').length || 0,
-    shipped: orders?.filter((o) => o.status === 'shipped').length || 0,
-    completed: orders?.filter((o) => o.status === 'completed').length || 0,
+    pending: active.filter((o) => o.status === 'pending').length,
+    paid: active.filter((o) => o.status === 'paid').length,
+    processing: active.filter((o) => o.status === 'processing').length,
+    shipped: active.filter((o) => o.status === 'shipped').length,
+    completed: active.filter((o) => o.status === 'completed').length,
   };
 
   return (
@@ -200,100 +236,137 @@ const AdminOrders = () => {
           })}
         </div>
 
-        <div className="flex items-center gap-4">
-          <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Rechercher par ID ou email..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-        </div>
+        <Tabs value={tab} onValueChange={(v) => setTab(v as 'active' | 'archive')}>
+          <div className="flex flex-col md:flex-row md:items-center gap-4 justify-between">
+            <TabsList>
+              <TabsTrigger value="active">
+                Commandes actives ({activeOrders?.length ?? 0})
+              </TabsTrigger>
+              <TabsTrigger value="archive">
+                <ArchiveIcon className="h-4 w-4 mr-1" />
+                Archive ({archivedOrders?.length ?? 0})
+              </TabsTrigger>
+            </TabsList>
 
-        {isLoading ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            <div className="relative flex-1 max-w-sm">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Rechercher par ID ou email..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-10"
+              />
+            </div>
           </div>
-        ) : (
-          <div className="border rounded-lg">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Commande</TableHead>
-                  <TableHead>Client</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Montant</TableHead>
-                  <TableHead>Statut actuel</TableHead>
-                  <TableHead>Changer le statut</TableHead>
-                  <TableHead className="w-12"></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredOrders?.length === 0 ? (
+
+          {tab === 'archive' && (
+            <p className="text-sm text-muted-foreground mt-3">
+              Les commandes annulées et celles livrées depuis plus de 24 h sont automatiquement archivées.
+              Vous pouvez supprimer définitivement n'importe quelle commande archivée.
+            </p>
+          )}
+
+          {isLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+          ) : (
+            <div className="border rounded-lg mt-4">
+              <Table>
+                <TableHeader>
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">
-                      Aucune commande trouvée
-                    </TableCell>
+                    <TableHead>Commande</TableHead>
+                    <TableHead>Client</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Montant</TableHead>
+                    <TableHead>Statut actuel</TableHead>
+                    {tab === 'active' && <TableHead>Changer le statut</TableHead>}
+                    <TableHead className="w-24"></TableHead>
                   </TableRow>
-                ) : (
-                  filteredOrders?.map((order) => (
-                    <TableRow key={order.id}>
-                      <TableCell>
-                        <p className="font-mono text-sm">{(order.paypal_order_id || order.id).slice(0, 15)}...</p>
-                        <p className="text-xs text-muted-foreground capitalize">{order.payment_method}</p>
-                      </TableCell>
-                      <TableCell>{order.payer_email || 'N/A'}</TableCell>
-                      <TableCell>
-                        {format(new Date(order.created_at), 'dd MMM yyyy', { locale: fr })}
-                      </TableCell>
-                      <TableCell>
-                        {order.total_amount.toFixed(2)} {order.currency}
-                      </TableCell>
-                      <TableCell>
-                        <StatusBadge status={order.status} />
-                      </TableCell>
-                      <TableCell>
-                        <Select
-                          value={order.status}
-                          onValueChange={(value) => handleStatusChange(order, value)}
-                        >
-                          <SelectTrigger className="w-40">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {ORDER_STATUSES.map((status) => {
-                              const Icon = status.icon;
-                              return (
-                                <SelectItem key={status.value} value={status.value}>
-                                  <div className="flex items-center gap-2">
-                                    <Icon className={`h-4 w-4 ${status.color}`} />
-                                    {status.label}
-                                  </div>
-                                </SelectItem>
-                              );
-                            })}
-                          </SelectContent>
-                        </Select>
-                      </TableCell>
-                      <TableCell>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => setSelectedOrder(order)}
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
+                </TableHeader>
+                <TableBody>
+                  {displayedOrders?.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">
+                        {tab === 'archive' ? 'Aucune commande archivée' : 'Aucune commande trouvée'}
                       </TableCell>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        )}
+                  ) : (
+                    displayedOrders?.map((order) => (
+                      <TableRow key={order.id}>
+                        <TableCell>
+                          <p className="font-mono text-sm">{(order.paypal_order_id || order.id).slice(0, 15)}...</p>
+                          <p className="text-xs text-muted-foreground capitalize">{order.payment_method}</p>
+                        </TableCell>
+                        <TableCell>{order.payer_email || 'N/A'}</TableCell>
+                        <TableCell>
+                          {format(new Date(order.created_at), 'dd MMM yyyy', { locale: fr })}
+                        </TableCell>
+                        <TableCell>
+                          {order.total_amount.toFixed(2)} {order.currency}
+                          {order.status === 'cancelled' && (
+                            <p className="text-xs text-red-600">Exclue du CA</p>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <StatusBadge status={order.status} />
+                        </TableCell>
+                        {tab === 'active' && (
+                          <TableCell>
+                            <Select
+                              value={order.status}
+                              onValueChange={(value) => handleStatusChange(order, value)}
+                            >
+                              <SelectTrigger className="w-40">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {ORDER_STATUSES.map((status) => {
+                                  const Icon = status.icon;
+                                  return (
+                                    <SelectItem key={status.value} value={status.value}>
+                                      <div className="flex items-center gap-2">
+                                        <Icon className={`h-4 w-4 ${status.color}`} />
+                                        {status.label}
+                                      </div>
+                                    </SelectItem>
+                                  );
+                                })}
+                              </SelectContent>
+                            </Select>
+                          </TableCell>
+                        )}
+                        <TableCell>
+                          <div className="flex gap-1 justify-end">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => setSelectedOrder(order)}
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            {tab === 'archive' && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="text-destructive hover:text-destructive"
+                                onClick={() => setDeleteTarget(order)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </Tabs>
       </div>
+
 
       {/* Order Details Dialog */}
       <Dialog open={!!selectedOrder} onOpenChange={() => setSelectedOrder(null)}>
@@ -497,6 +570,32 @@ const AdminOrders = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Delete Order Confirmation */}
+      <AlertDialog open={!!deleteTarget} onOpenChange={() => setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer définitivement cette commande ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Cette action est irréversible. La commande {deleteTarget?.paypal_order_id?.slice(0, 12) || deleteTarget?.id.slice(0, 12)}
+              {' '}sera supprimée de la base de données. Cela n'affecte pas le chiffre d'affaires
+              (les commandes annulées en étaient déjà exclues).
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => deleteTarget && deleteOrderMutation.mutate(deleteTarget.id)}
+              disabled={deleteOrderMutation.isPending}
+            >
+              {deleteOrderMutation.isPending && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
 
       {/* Usage Guide Dialog */}
       <Dialog open={showGuide} onOpenChange={setShowGuide}>
