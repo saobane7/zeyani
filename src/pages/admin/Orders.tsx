@@ -371,7 +371,24 @@ const AdminOrders = () => {
                           </TableCell>
                         )}
                         <TableCell>
-                          <div className="flex gap-1 justify-end">
+                          <div className="flex gap-1 justify-end items-center">
+                            {order.status === 'cancelled' && (
+                              order.refunded_at ? (
+                                <span className="text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full inline-flex items-center gap-1">
+                                  <BadgeCheck className="h-3 w-3" /> Remboursé
+                                </span>
+                              ) : (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-8 text-emerald-700 border-emerald-300 hover:bg-emerald-50"
+                                  onClick={() => setRefundTarget(order)}
+                                >
+                                  <BadgeCheck className="h-4 w-4 mr-1" />
+                                  Marquer remboursé
+                                </Button>
+                              )
+                            )}
                             <Button
                               variant="ghost"
                               size="icon"
