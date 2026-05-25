@@ -165,20 +165,53 @@ const AdminOrders = () => {
     }
   };
 
-  const filteredOrders = orders?.filter(
-    (order) =>
-      (order.paypal_order_id?.toLowerCase().includes(search.toLowerCase()) ?? false) ||
-      order.id.toLowerCase().includes(search.toLowerCase()) ||
-      order.payer_email?.toLowerCase().includes(search.toLowerCase())
-  );
+  const deleteOrderMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('orders').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
+      toast.success('Commande supprimée définitivement');
+      setDeleteTarget(null);
+    },
+    onError: (error) => {
+      console.error('Error deleting order:', error);
+      toast.error('Erreur lors de la suppression');
+    },
+  });
 
-  // Stats
+  const handleStatusChange = (order: Order, newStatus: string) => {
+    if (order.status === newStatus) return;
+    setStatusChangeDialog({ order, newStatus });
+  };
+
+  const confirmStatusChange = () => {
+    if (statusChangeDialog) {
+      updateStatusMutation.mutate({
+        id: statusChangeDialog.order.id,
+        status: statusChangeDialog.newStatus,
+      });
+    }
+  };
+
+  const matchesSearch = (order: Order) =>
+    (order.paypal_order_id?.toLowerCase().includes(search.toLowerCase()) ?? false) ||
+    order.id.toLowerCase().includes(search.toLowerCase()) ||
+    (order.payer_email?.toLowerCase().includes(search.toLowerCase()) ?? false);
+
+  const activeOrders = orders?.filter((o) => !isArchived(o) && matchesSearch(o));
+  const archivedOrders = orders?.filter((o) => isArchived(o) && matchesSearch(o));
+  const displayedOrders = tab === 'active' ? activeOrders : archivedOrders;
+
+  // Stats : on ne compte que les commandes actives (non archivées)
+  const active = orders?.filter((o) => !isArchived(o)) || [];
   const stats = {
-    pending: orders?.filter((o) => o.status === 'pending').length || 0,
-    paid: orders?.filter((o) => o.status === 'paid').length || 0,
-    processing: orders?.filter((o) => o.status === 'processing').length || 0,
-    shipped: orders?.filter((o) => o.status === 'shipped').length || 0,
-    completed: orders?.filter((o) => o.status === 'completed').length || 0,
+    pending: active.filter((o) => o.status === 'pending').length,
+    paid: active.filter((o) => o.status === 'paid').length,
+    processing: active.filter((o) => o.status === 'processing').length,
+    shipped: active.filter((o) => o.status === 'shipped').length,
+    completed: active.filter((o) => o.status === 'completed').length,
   };
 
   return (
