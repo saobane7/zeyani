@@ -571,25 +571,46 @@ const AdminOrders = () => {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Confirmer le changement de statut</AlertDialogTitle>
-            <AlertDialogDescription asChild>
-              <div className="space-y-4">
-                <p>Voulez-vous vraiment changer le statut de cette commande ?</p>
-                {statusChangeDialog && (
-                  <div className="flex items-center justify-center gap-4 py-4">
-                    <StatusBadge status={statusChangeDialog.order.status} size="lg" />
-                    <ArrowRight className="h-5 w-5 text-muted-foreground" />
-                    <StatusBadge status={statusChangeDialog.newStatus} size="lg" />
-                  </div>
-                )}
-                {statusChangeDialog?.newStatus === 'completed' && (
-                  <p className="text-sm text-amber-600 bg-amber-50 p-3 rounded-lg">
-                    ⚠️ Marquer comme "Livrée" déclenchera le compte à rebours RGPD de 3 ans 
-                    pour la conservation des données.
-                  </p>
-                )}
-              </div>
+            <AlertDialogDescription>
+              Voulez-vous vraiment changer le statut de cette commande ?
             </AlertDialogDescription>
           </AlertDialogHeader>
+
+          <div className="space-y-4">
+            {statusChangeDialog && (
+              <div className="flex items-center justify-center gap-4 py-2">
+                <StatusBadge status={statusChangeDialog.order.status} size="lg" />
+                <ArrowRight className="h-5 w-5 text-muted-foreground" />
+                <StatusBadge status={statusChangeDialog.newStatus} size="lg" />
+              </div>
+            )}
+            {statusChangeDialog?.newStatus === 'completed' && (
+              <p className="text-sm text-amber-600 bg-amber-50 p-3 rounded-lg">
+                ⚠️ Marquer comme "Livrée" déclenchera le compte à rebours RGPD de 3 ans
+                pour la conservation des données.
+              </p>
+            )}
+            {statusChangeDialog?.newStatus === 'cancelled' && (
+              <div className="space-y-2">
+                <label className="text-sm font-medium flex items-center gap-2">
+                  <AlertCircle className="h-4 w-4 text-red-600" />
+                  Raison de l'annulation <span className="text-red-600">*</span>
+                </label>
+                <Textarea
+                  value={cancellationReason}
+                  onChange={(e) => setCancellationReason(e.target.value)}
+                  placeholder="Ex : rupture de stock, demande du client, erreur d'adresse…"
+                  rows={3}
+                  maxLength={500}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Cette raison sera visible par le client dans son historique de commandes.
+                  Vous pourrez ensuite confirmer le remboursement depuis l'archive.
+                </p>
+              </div>
+            )}
+          </div>
+
           <AlertDialogFooter>
             <AlertDialogCancel>Annuler</AlertDialogCancel>
             <AlertDialogAction 
