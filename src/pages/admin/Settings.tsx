@@ -17,6 +17,74 @@ const AdminSettings = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isChangingPassword, setIsChangingPassword] = useState(false);
 
+  // --- Réseaux sociaux ---
+  const [socials, setSocials] = useState<{ facebook: string; instagram: string; tiktok: string }>({
+    facebook: '',
+    instagram: '',
+    tiktok: '',
+  });
+  const [savingSocial, setSavingSocial] = useState<string | null>(null);
+
+  useEffect(() => {
+    supabase
+      .from('site_settings')
+      .select('value')
+      .eq('key', 'social_links')
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data?.value) {
+          const v = data.value as any;
+          setSocials({
+            facebook: v.facebook || '',
+            instagram: v.instagram || '',
+            tiktok: v.tiktok || '',
+          });
+        }
+      });
+  }, []);
+
+  const persistSocials = async (next: typeof socials) => {
+    const { error } = await supabase
+      .from('site_settings')
+      .upsert({ key: 'social_links', value: next as any }, { onConflict: 'key' });
+    if (error) throw error;
+  };
+
+  const handleSaveSocial = async (key: 'facebook' | 'instagram' | 'tiktok') => {
+    setSavingSocial(key);
+    try {
+      const value = socials[key].trim();
+      if (value && !/^https?:\/\//i.test(value)) {
+        toast.error("Le lien doit commencer par http:// ou https://");
+        return;
+      }
+      const next = { ...socials, [key]: value };
+      await persistSocials(next);
+      setSocials(next);
+      toast.success('Lien enregistré');
+    } catch (e) {
+      console.error(e);
+      toast.error("Erreur lors de l'enregistrement");
+    } finally {
+      setSavingSocial(null);
+    }
+  };
+
+  const handleRemoveSocial = async (key: 'facebook' | 'instagram' | 'tiktok') => {
+    setSavingSocial(key);
+    try {
+      const next = { ...socials, [key]: '' };
+      await persistSocials(next);
+      setSocials(next);
+      toast.success('Réseau retiré du site');
+    } catch (e) {
+      console.error(e);
+      toast.error('Erreur lors de la suppression');
+    } finally {
+      setSavingSocial(null);
+    }
+  };
+
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
 
