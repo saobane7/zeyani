@@ -571,6 +571,32 @@ const AdminOrders = () => {
         </AlertDialogContent>
       </AlertDialog>
 
+      {/* Delete Order Confirmation */}
+      <AlertDialog open={!!deleteTarget} onOpenChange={() => setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer définitivement cette commande ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Cette action est irréversible. La commande {deleteTarget?.paypal_order_id?.slice(0, 12) || deleteTarget?.id.slice(0, 12)}
+              {' '}sera supprimée de la base de données. Cela n'affecte pas le chiffre d'affaires
+              (les commandes annulées en étaient déjà exclues).
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => deleteTarget && deleteOrderMutation.mutate(deleteTarget.id)}
+              disabled={deleteOrderMutation.isPending}
+            >
+              {deleteOrderMutation.isPending && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+
       {/* Usage Guide Dialog */}
       <Dialog open={showGuide} onOpenChange={setShowGuide}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
