@@ -37,7 +37,8 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Search, Loader2, Eye, Info, ArrowRight, Trash2, Archive as ArchiveIcon } from 'lucide-react';
+import { Search, Loader2, Eye, Info, ArrowRight, Trash2, Archive as ArchiveIcon, BadgeCheck, AlertCircle } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
