@@ -131,11 +131,15 @@ const AdminOrders = () => {
   }, [queryClient]);
 
   const updateStatusMutation = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: string }) => {
+    mutationFn: async ({ id, status, reason }: { id: string; status: string; reason?: string }) => {
       const updateData: any = { status };
       
       if (status === 'completed') {
         updateData.received_at = new Date().toISOString();
+      }
+      if (status === 'cancelled') {
+        updateData.cancelled_at = new Date().toISOString();
+        updateData.cancellation_reason = reason || null;
       }
 
       const { error } = await supabase
@@ -150,6 +154,7 @@ const AdminOrders = () => {
       const statusConfig = getStatusConfig(variables.status);
       toast.success(`Statut mis à jour: ${statusConfig.label}`);
       setStatusChangeDialog(null);
+      setCancellationReason('');
     },
     onError: (error) => {
       console.error('Error updating status:', error);
@@ -157,6 +162,24 @@ const AdminOrders = () => {
     },
   });
 
+  const refundMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('orders')
+        .update({ refunded_at: new Date().toISOString() } as any)
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
+      toast.success('Remboursement confirmé — le client en sera informé');
+      setRefundTarget(null);
+    },
+    onError: (error) => {
+      console.error('Error confirming refund:', error);
+      toast.error('Erreur lors de la confirmation du remboursement');
+    },
+  });
 
   const deleteOrderMutation = useMutation({
     mutationFn: async (id: string) => {
@@ -176,16 +199,21 @@ const AdminOrders = () => {
 
   const handleStatusChange = (order: Order, newStatus: string) => {
     if (order.status === newStatus) return;
+    setCancellationReason('');
     setStatusChangeDialog({ order, newStatus });
   };
 
   const confirmStatusChange = () => {
-    if (statusChangeDialog) {
-      updateStatusMutation.mutate({
-        id: statusChangeDialog.order.id,
-        status: statusChangeDialog.newStatus,
-      });
+    if (!statusChangeDialog) return;
+    if (statusChangeDialog.newStatus === 'cancelled' && !cancellationReason.trim()) {
+      toast.error('Merci de renseigner la raison de l\'annulation');
+      return;
     }
+    updateStatusMutation.mutate({
+      id: statusChangeDialog.order.id,
+      status: statusChangeDialog.newStatus,
+      reason: cancellationReason.trim(),
+    });
   };
 
   const matchesSearch = (order: Order) =>
