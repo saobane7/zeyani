@@ -43,6 +43,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { getShortOrderRef } from '@/lib/orderRef';
 import { 
   ORDER_STATUSES, 
   getStatusConfig, 
@@ -220,6 +221,7 @@ const AdminOrders = () => {
   const matchesSearch = (order: Order) =>
     (order.paypal_order_id?.toLowerCase().includes(search.toLowerCase()) ?? false) ||
     order.id.toLowerCase().includes(search.toLowerCase()) ||
+    getShortOrderRef(order.order_number, order.paypal_order_id).toLowerCase().includes(search.toLowerCase()) ||
     (order.payer_email?.toLowerCase().includes(search.toLowerCase()) ?? false);
 
   const activeOrders = orders?.filter((o) => !isArchived(o) && matchesSearch(o));
@@ -330,7 +332,7 @@ const AdminOrders = () => {
                     displayedOrders?.map((order) => (
                       <TableRow key={order.id}>
                         <TableCell>
-                          <p className="font-mono text-sm">{(order.paypal_order_id || order.id).slice(0, 15)}...</p>
+                          <p className="font-mono text-sm">{getShortOrderRef(order.order_number, order.paypal_order_id)}</p>
                           <p className="text-xs text-muted-foreground capitalize">{order.payment_method}</p>
                         </TableCell>
                         <TableCell>{order.payer_email || 'N/A'}</TableCell>
@@ -426,7 +428,7 @@ const AdminOrders = () => {
           <DialogHeader>
             <DialogTitle>Détails de la commande</DialogTitle>
             <DialogDescription>
-              {selectedOrder?.paypal_order_id || selectedOrder?.id}
+              {selectedOrder ? getShortOrderRef(selectedOrder.order_number, selectedOrder.paypal_order_id) : ''}
             </DialogDescription>
           </DialogHeader>
 
@@ -492,9 +494,9 @@ const AdminOrders = () => {
                   >
                     <a
                       href={`mailto:${selectedOrder.payer_email}?subject=${encodeURIComponent(
-                        `Confirmation de votre commande Zeyanii #${(selectedOrder.paypal_order_id || selectedOrder.id).slice(0, 8)}`
+                        `Confirmation de votre commande Zeyanii ${getShortOrderRef(selectedOrder.order_number, selectedOrder.paypal_order_id)}`
                       )}&body=${encodeURIComponent(
-                        `Bonjour,\n\nNous avons bien reçu votre virement Wero pour votre commande #${(selectedOrder.paypal_order_id || selectedOrder.id).slice(0, 8)} d'un montant de ${selectedOrder.total_amount.toFixed(2)} ${selectedOrder.currency}.\n\nVotre commande est désormais confirmée et sera préparée puis expédiée dans les meilleurs délais.\n\nMerci pour votre confiance,\nL'équipe Zeyanii`
+                        `Bonjour,\n\nNous avons bien reçu votre virement Wero pour votre commande ${getShortOrderRef(selectedOrder.order_number, selectedOrder.paypal_order_id)} d'un montant de ${selectedOrder.total_amount.toFixed(2)} ${selectedOrder.currency}.\n\nVotre commande est désormais confirmée et sera préparée puis expédiée dans les meilleurs délais.\n\nMerci pour votre confiance,\nL'équipe Zeyanii`
                       )}`}
                     >
                       Ouvrir le brouillon d'email
@@ -650,7 +652,7 @@ const AdminOrders = () => {
           <AlertDialogHeader>
             <AlertDialogTitle>Supprimer définitivement cette commande ?</AlertDialogTitle>
             <AlertDialogDescription>
-              Cette action est irréversible. La commande {deleteTarget?.paypal_order_id?.slice(0, 12) || deleteTarget?.id.slice(0, 12)}
+              Cette action est irréversible. La commande {deleteTarget ? getShortOrderRef(deleteTarget.order_number, deleteTarget.paypal_order_id) : ''}
               {' '}sera supprimée de la base de données. Cela n'affecte pas le chiffre d'affaires
               (les commandes annulées en étaient déjà exclues).
             </AlertDialogDescription>
