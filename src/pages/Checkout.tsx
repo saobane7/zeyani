@@ -35,6 +35,7 @@ const Checkout = () => {
   const { user, loading: authLoading } = useAuth();
   const [orderSuccess, setOrderSuccess] = useState(false);
   const [orderId, setOrderId] = useState<string | null>(null);
+  const [orderNumber, setOrderNumber] = useState<number | null>(null);
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const [selectedShipping, setSelectedShipping] = useState<ShippingOption>("free");
   const [orderDate, setOrderDate] = useState<Date>(new Date());
@@ -52,7 +53,7 @@ const Checkout = () => {
   const shippingPrice = SHIPPING_OPTIONS[selectedShipping].price;
   const finalTotal = totalPrice + shippingPrice;
 
-  const handleSuccess = (id: string, method: "paypal" | "wero" = "paypal") => {
+  const handleSuccess = async (id: string, method: "paypal" | "wero" = "paypal") => {
     setOrderItems(items.map(item => ({
       name: item.product.name,
       quantity: item.quantity,
@@ -66,6 +67,18 @@ const Checkout = () => {
     setSuccessMethod(method);
     setOrderSuccess(true);
     setPaymentError(null);
+
+    // Récupère le numéro court séquentiel (ex: ZEY-12) depuis la base
+    try {
+      const { data } = await supabase
+        .from("orders")
+        .select("order_number")
+        .or(`id.eq.${id},paypal_order_id.eq.${id}`)
+        .maybeSingle();
+      if (data?.order_number) setOrderNumber(data.order_number as number);
+    } catch (e) {
+      console.warn("Could not fetch order_number", e);
+    }
   };
 
   const handleError = (error: string) => {
@@ -174,6 +187,7 @@ const Checkout = () => {
             {/* Order Receipt Component */}
             <OrderReceipt
               orderId={orderId}
+              orderNumber={orderNumber}
               items={orderItems}
               shipping={orderShipping}
               subtotal={orderSubtotal}
