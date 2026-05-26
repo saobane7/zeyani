@@ -66,6 +66,7 @@ interface Order {
   id: string;
   user_id: string;
   paypal_order_id: string | null;
+  order_number: number | null;
   payment_method: string;
   payment_proof_url: string | null;
   status: string;
