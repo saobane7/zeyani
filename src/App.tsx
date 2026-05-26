@@ -29,6 +29,7 @@ import AdminSettings from "./pages/admin/Settings";
 import AdminLogin from "./pages/admin/Login";
 import AdminMessages from "./pages/admin/Messages";
 import AdminVideo from "./pages/admin/Video";
+import AdminHomeSlides from "./pages/admin/HomeSlides";
 import CookieBanner from "./components/CookieBanner";
 
 const queryClient = new QueryClient();
@@ -66,6 +67,7 @@ const App = () => (
                 <Route path="/admin/parametres" element={<AdminSettings />} />
                 <Route path="/admin/messages" element={<AdminMessages />} />
                 <Route path="/admin/video" element={<AdminVideo />} />
+                <Route path="/admin/accueil" element={<AdminHomeSlides />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
               <CookieBanner />

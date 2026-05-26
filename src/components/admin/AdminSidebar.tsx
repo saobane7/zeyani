@@ -8,6 +8,7 @@ import {
   ChevronLeft,
   MessageSquare,
   Video,
+  Home,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -16,6 +17,7 @@ import { useNavigate } from 'react-router-dom';
 
 const menuItems = [
   { icon: LayoutDashboard, label: 'Tableau de bord', path: '/admin' },
+  { icon: Home, label: 'Section accueil', path: '/admin/accueil' },
   { icon: Package, label: 'Produits', path: '/admin/produits' },
   { icon: ShoppingCart, label: 'Commandes', path: '/admin/commandes' },
   { icon: MessageSquare, label: 'Messages', path: '/admin/messages' },

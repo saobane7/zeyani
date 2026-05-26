@@ -19,6 +19,7 @@ interface OrderItem {
 interface Order {
   id: string;
   paypal_order_id: string;
+  order_number: number | null;
   status: string;
   total_amount: number;
   currency: string;
@@ -99,7 +100,7 @@ const OrderHistory = () => {
     const shippingMethod = order.shipping_address?.method || { type: "free", label: "Livraison gratuite", price: 0 };
     const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
-    const shortRef = getShortOrderRef(order.paypal_order_id);
+    const shortRef = getShortOrderRef(order.order_number, order.paypal_order_id);
 
     const printWindow = window.open("", "_blank");
     if (!printWindow) {
@@ -379,7 +380,7 @@ const OrderHistory = () => {
                           {format(new Date(order.created_at), "d MMMM yyyy 'à' HH:mm", { locale: fr })}
                         </div>
                         <p className="text-xs text-muted-foreground">
-                          Réf: {getShortOrderRef(order.paypal_order_id)}
+                          Réf: {getShortOrderRef(order.order_number, order.paypal_order_id)}
                         </p>
                       </div>
                       <StatusBadge status={order.status} />

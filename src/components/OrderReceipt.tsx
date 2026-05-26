@@ -20,6 +20,7 @@ interface ShippingInfo {
 
 interface OrderReceiptProps {
   orderId: string;
+  orderNumber?: number | null;
   items: ReceiptItem[];
   shipping: ShippingInfo;
   subtotal: number;
@@ -30,6 +31,7 @@ interface OrderReceiptProps {
 
 const OrderReceipt = ({
   orderId,
+  orderNumber,
   items,
   shipping,
   subtotal,
@@ -38,7 +40,7 @@ const OrderReceipt = ({
   payerEmail,
 }: OrderReceiptProps) => {
   const receiptRef = useRef<HTMLDivElement>(null);
-  const shortRef = getShortOrderRef(orderId);
+  const shortRef = getShortOrderRef(orderNumber ?? null, orderId);
 
   const handleDownload = () => {
     if (!receiptRef.current) return;

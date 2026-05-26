@@ -53,6 +53,7 @@ export type Database = {
           expires_at: string | null
           id: string
           items: Json
+          order_number: number
           payer_email: string | null
           payment_method: string
           payment_proof_url: string | null
@@ -73,6 +74,7 @@ export type Database = {
           expires_at?: string | null
           id?: string
           items: Json
+          order_number?: number
           payer_email?: string | null
           payment_method?: string
           payment_proof_url?: string | null
@@ -93,6 +95,7 @@ export type Database = {
           expires_at?: string | null
           id?: string
           items?: Json
+          order_number?: number
           payer_email?: string | null
           payment_method?: string
           payment_proof_url?: string | null
