@@ -7,6 +7,7 @@ import Footer from "@/components/Footer";
 import PayPalButton from "@/components/PayPalButton";
 import WeroPayment from "@/components/WeroPayment";
 import OrderReceipt from "@/components/OrderReceipt";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
