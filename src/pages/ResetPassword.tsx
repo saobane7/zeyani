@@ -37,7 +37,7 @@ const ResetPassword = () => {
     }
 
     toast.success("Mot de passe modifié avec succès");
-    navigate("/admin_dev");
+    navigate("/");
   };
 
   return (
