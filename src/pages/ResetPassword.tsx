@@ -8,6 +8,27 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
+const getResetParams = () => {
+  const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+  const queryParams = new URLSearchParams(window.location.search);
+  const get = (key: string) => hashParams.get(key) || queryParams.get(key);
+
+  return {
+    accessToken: get("access_token"),
+    refreshToken: get("refresh_token"),
+    code: get("code"),
+    tokenHash: get("token_hash"),
+    token: get("token"),
+    email: get("email"),
+    type: get("type"),
+    error: get("error") || get("error_code"),
+  };
+};
+
+const cleanResetUrl = () => {
+  window.history.replaceState({}, "", window.location.pathname);
+};
+
 const ResetPassword = () => {
   const navigate = useNavigate();
   const [password, setPassword] = useState("");
@@ -15,65 +36,111 @@ const ResetPassword = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [ready, setReady] = useState(false);
   const [sessionOk, setSessionOk] = useState(false);
+  const [linkError, setLinkError] = useState("");
 
   useEffect(() => {
-    // Supabase peut renvoyer les tokens dans le hash (#access_token=...&type=recovery)
-    // ou dans la query (?code=...). On gère les deux cas.
-    const init = async () => {
-      try {
-        const hash = window.location.hash || "";
-        const search = window.location.search || "";
+    let mounted = true;
 
-        // Cas 1: hash avec access_token (lien direct de récupération)
-        if (hash.includes("access_token") && hash.includes("type=recovery")) {
-          const params = new URLSearchParams(hash.replace(/^#/, ""));
-          const access_token = params.get("access_token");
-          const refresh_token = params.get("refresh_token");
-          if (access_token && refresh_token) {
-            const { error } = await supabase.auth.setSession({ access_token, refresh_token });
-            if (error) throw error;
-            window.history.replaceState({}, "", window.location.pathname);
-            setSessionOk(true);
-            setReady(true);
-            return;
-          }
-        }
+    const confirmActiveRecoverySession = async () => {
+      const { data, error } = await supabase.auth.getUser();
+      if (!mounted) return false;
 
-        // Cas 2: code dans la query string (PKCE)
-        const urlParams = new URLSearchParams(search);
-        const code = urlParams.get("code");
-        if (code) {
-          const { error } = await supabase.auth.exchangeCodeForSession(code);
-          if (error) throw error;
-          window.history.replaceState({}, "", window.location.pathname);
-          setSessionOk(true);
-          setReady(true);
-          return;
-        }
-
-        // Cas 3: session déjà active (onAuthStateChange a déjà fait le travail)
-        const { data } = await supabase.auth.getSession();
-        if (data.session) {
-          setSessionOk(true);
-        }
+      if (!error && data.user) {
+        setSessionOk(true);
+        setLinkError("");
         setReady(true);
-      } catch (err) {
-        console.error("Reset password init error:", err);
-        setReady(true);
+        cleanResetUrl();
+        return true;
+      }
+
+      return false;
+    };
+
+    const requireActiveRecoverySession = async () => {
+      if (!(await confirmActiveRecoverySession())) {
+        throw new Error("Session de réinitialisation introuvable");
       }
     };
 
-    // Écoute aussi l'événement PASSWORD_RECOVERY
+    const init = async () => {
+      try {
+        const params = getResetParams();
+
+        if (params.error) {
+          throw new Error("Lien de réinitialisation invalide ou expiré");
+        }
+
+        if (params.accessToken && params.refreshToken) {
+          const { error } = await supabase.auth.setSession({
+            access_token: params.accessToken,
+            refresh_token: params.refreshToken,
+          });
+          if (error) throw error;
+          await requireActiveRecoverySession();
+          return;
+        }
+
+        if (params.tokenHash && params.type === "recovery") {
+          const { error } = await supabase.auth.verifyOtp({
+            type: "recovery",
+            token_hash: params.tokenHash,
+          });
+          if (error) throw error;
+          await requireActiveRecoverySession();
+          return;
+        }
+
+        if (params.token && params.email && params.type === "recovery") {
+          const { error } = await supabase.auth.verifyOtp({
+            type: "recovery",
+            token: params.token,
+            email: params.email,
+          });
+          if (error) throw error;
+          await requireActiveRecoverySession();
+          return;
+        }
+
+        if (params.code) {
+          const { error } = await supabase.auth.exchangeCodeForSession(params.code);
+          if (error) throw error;
+          await requireActiveRecoverySession();
+          return;
+        }
+
+        if (await confirmActiveRecoverySession()) return;
+
+        if (mounted) {
+          setSessionOk(false);
+          setLinkError("Le lien a expiré ou n'est pas valide. Demandez un nouvel email de réinitialisation.");
+          setReady(true);
+        }
+      } catch (err) {
+        console.error("Reset password init error:", err);
+        if (mounted) {
+          setSessionOk(false);
+          setLinkError("Le lien a expiré ou n'est pas valide. Demandez un nouvel email de réinitialisation.");
+          setReady(true);
+        }
+      }
+    };
+
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "PASSWORD_RECOVERY" || (event === "SIGNED_IN" && session)) {
+      if (!mounted) return;
+      if (event === "PASSWORD_RECOVERY" && session?.user) {
         setSessionOk(true);
+        setLinkError("");
         setReady(true);
+        cleanResetUrl();
       }
     });
 
     init();
 
-    return () => sub.subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      sub.subscription.unsubscribe();
+    };
   }, []);
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -90,11 +157,25 @@ const ResetPassword = () => {
     }
 
     setIsLoading(true);
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+
+    if (userError || !userData.user) {
+      setIsLoading(false);
+      setSessionOk(false);
+      setLinkError("Votre session de réinitialisation a expiré. Demandez un nouvel email de réinitialisation.");
+      toast.error("Votre session a expiré. Demandez un nouvel email de réinitialisation.");
+      return;
+    }
+
     const { error } = await supabase.auth.updateUser({ password });
     setIsLoading(false);
 
     if (error) {
-      toast.error("Impossible de modifier le mot de passe. Le lien a peut-être expiré.");
+      console.error("Reset password update error:", error);
+      const message = error.message.toLowerCase().includes("different")
+        ? "Choisissez un mot de passe différent de l'ancien."
+        : "Impossible de modifier le mot de passe. Demandez un nouvel email de réinitialisation si le problème continue.";
+      toast.error(message);
       return;
     }
 
@@ -119,7 +200,7 @@ const ResetPassword = () => {
           <CardDescription>
             {sessionOk
               ? "Choisissez un nouveau mot de passe pour votre compte."
-              : "Le lien a expiré ou n'est pas valide. Demandez un nouvel email de réinitialisation."}
+              : linkError || "Le lien a expiré ou n'est pas valide. Demandez un nouvel email de réinitialisation."}
           </CardDescription>
         </CardHeader>
         <CardContent>
