@@ -56,6 +56,12 @@ const ResetPassword = () => {
       return false;
     };
 
+    const requireActiveRecoverySession = async () => {
+      if (!(await confirmActiveRecoverySession())) {
+        throw new Error("Session de réinitialisation introuvable");
+      }
+    };
+
     const init = async () => {
       try {
         const params = getResetParams();
@@ -70,7 +76,7 @@ const ResetPassword = () => {
             refresh_token: params.refreshToken,
           });
           if (error) throw error;
-          await confirmActiveRecoverySession();
+          await requireActiveRecoverySession();
           return;
         }
 
@@ -80,7 +86,7 @@ const ResetPassword = () => {
             token_hash: params.tokenHash,
           });
           if (error) throw error;
-          await confirmActiveRecoverySession();
+          await requireActiveRecoverySession();
           return;
         }
 
@@ -91,14 +97,14 @@ const ResetPassword = () => {
             email: params.email,
           });
           if (error) throw error;
-          await confirmActiveRecoverySession();
+          await requireActiveRecoverySession();
           return;
         }
 
         if (params.code) {
           const { error } = await supabase.auth.exchangeCodeForSession(params.code);
           if (error) throw error;
-          await confirmActiveRecoverySession();
+          await requireActiveRecoverySession();
           return;
         }
 
