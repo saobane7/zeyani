@@ -26,7 +26,26 @@ const Auth = () => {
   const [address, setAddress] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [resetting, setResetting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const handleForgotPassword = async () => {
+    const result = emailSchema.safeParse(email);
+    if (!result.success) {
+      setErrors({ ...errors, email: "Entrez d'abord votre email" });
+      return;
+    }
+    setResetting(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    setResetting(false);
+    if (error) {
+      toast.error("Impossible d'envoyer l'email de réinitialisation");
+      return;
+    }
+    toast.success("Email de réinitialisation envoyé. Vérifiez votre boîte de réception.");
+  };
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -210,6 +229,19 @@ const Auth = () => {
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Chargement..." : isLogin ? "Se connecter" : "S'inscrire"}
             </Button>
+
+            {isLogin && (
+              <div className="text-center">
+                <button
+                  type="button"
+                  onClick={handleForgotPassword}
+                  disabled={resetting}
+                  className="text-sm text-muted-foreground hover:text-primary hover:underline disabled:opacity-50"
+                >
+                  {resetting ? "Envoi..." : "Mot de passe oublié ?"}
+                </button>
+              </div>
+            )}
 
             <div className="text-center">
               <button
