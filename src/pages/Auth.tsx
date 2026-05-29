@@ -230,6 +230,19 @@ const Auth = () => {
               {loading ? "Chargement..." : isLogin ? "Se connecter" : "S'inscrire"}
             </Button>
 
+            {isLogin && (
+              <div className="text-center">
+                <button
+                  type="button"
+                  onClick={handleForgotPassword}
+                  disabled={resetting}
+                  className="text-sm text-muted-foreground hover:text-primary hover:underline disabled:opacity-50"
+                >
+                  {resetting ? "Envoi..." : "Mot de passe oublié ?"}
+                </button>
+              </div>
+            )}
+
             <div className="text-center">
               <button
                 type="button"
